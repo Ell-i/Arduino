@@ -25,6 +25,7 @@ extern "C" {
 
 __attribute__ ((long_call, section (".ramfunc")))
 void banzai() {
+#if defined(__SAM3X8E__)
 	// Disable all interrupts
 	__disable_irq();
 
@@ -53,6 +54,7 @@ void banzai() {
 		RSTC_CR_PERRST;
 
 	while (true);
+#endif
 }
 
 static int ticks = -1;

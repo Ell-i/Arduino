@@ -11,6 +11,7 @@ arduino_due_x_dbg.build.f_cpu=84000000L
 arduino_due_x_dbg.build.board=SAM_DUE
 arduino_due_x_dbg.build.core=arduino
 arduino_due_x_dbg.build.extra_flags=-D__SAM3X8E__ -mthumb -DUSB_PID={build.pid} -DUSB_VID={build.vid} -DUSBCON
+arduino_due_x_dbg.build.library.c.flags="-I{build.system.path}/libsam" "-I{build.system.path}/CMSIS/CMSIS/Include/" "-I{build.system.path}/CMSIS/Device/ATMEL/"
 arduino_due_x_dbg.build.ldscript=linker_scripts/gcc/flash.ld
 arduino_due_x_dbg.build.variant=arduino_due_x
 arduino_due_x_dbg.build.variant_system_lib=libsam_sam3x8e_gcc_rel.a
@@ -29,9 +30,26 @@ arduino_due_x.build.f_cpu=84000000L
 arduino_due_x.build.board=SAM_DUE
 arduino_due_x.build.core=arduino
 arduino_due_x.build.extra_flags=-D__SAM3X8E__ -mthumb -DUSB_PID={build.pid} -DUSB_VID={build.vid} -DUSBCON
+arduino_due_x.build.library.c.flags="-I{build.system.path}/libsam" "-I{build.system.path}/CMSIS/CMSIS/Include/" "-I{build.system.path}/CMSIS/Device/ATMEL/"
 arduino_due_x.build.ldscript=linker_scripts/gcc/flash.ld
 arduino_due_x.build.variant=arduino_due_x
 arduino_due_x.build.variant_system_lib=libsam_sam3x8e_gcc_rel.a
 arduino_due_x.build.vid=0x2341
 arduino_due_x.build.pid=0x003e
+
+ellduino_stm32f051.name=Ell-duino (Serial Cable)
+ellduino_stm32f051.upload.tool=stmflash
+ellduino_stm32f051.upload.protocol=stm
+ellduino_stm32f051.upload.maximum_size=65535
+ellduino_stm32f051.upload.wait_for_upload_port=false
+ellduino_stm32f051.upload.native_usb=false
+ellduino_stm32f051.build.mcu=cortex-m0
+ellduino_stm32f051.build.f_cpu=84000000LXXX
+ellduino_stm32f051.build.board=ELLI_STM32F051
+ellduino_stm32f051.build.core=arduino
+ellduino_stm32f051.build.extra_flags=-mthumb -D__STM32F051__
+ellduino_stm32f051.build.library.c.flags="-I{build.system.path}/libstm32f"
+ellduino_stm32f051.build.ldscript=linker_scripts/gcc/flash.ld
+ellduino_stm32f051.build.variant=ellduino_stm32f051
+ellduino_stm32f051.build.variant_system_lib=libstm32f_051_gcc_rel.a
 

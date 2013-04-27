@@ -36,6 +36,7 @@ USARTClass::USARTClass( Usart* pUsart, IRQn_Type dwIrq, uint32_t dwId, RingBuffe
 
 void USARTClass::begin( const uint32_t dwBaudRate )
 {
+#if defined(__SAM3X8E__)
   // Configure PMC
   pmc_enable_periph_clk( _dwId ) ;
 
@@ -61,6 +62,7 @@ void USARTClass::begin( const uint32_t dwBaudRate )
 
   // Enable receiver and transmitter
   _pUsart->US_CR = US_CR_RXEN | US_CR_TXEN ;
+#endif
 }
 
 void USARTClass::end( void )
@@ -68,6 +70,7 @@ void USARTClass::end( void )
   // clear any received data
   _rx_buffer->_iHead = _rx_buffer->_iTail ;
 
+#if defined(__SAM3X8E__)
   // Disable UART interrupt in NVIC
   NVIC_DisableIRQ( _dwIrq ) ;
 
@@ -75,6 +78,7 @@ void USARTClass::end( void )
   flush();
 
   pmc_disable_periph_clk( _dwId ) ;
+#endif
 }
 
 int USARTClass::available( void )
@@ -103,24 +107,29 @@ int USARTClass::read( void )
 
 void USARTClass::flush( void )
 {
+#if defined(__SAM3X8E__)
   // Wait for transmission to complete
   while ((_pUsart->US_CSR & US_CSR_TXRDY) != US_CSR_TXRDY)
 	;
+#endif
 }
 
 size_t USARTClass::write( const uint8_t uc_data )
 {
+#if defined(__SAM3X8E__)
   // Check if the transmitter is ready
   while ((_pUsart->US_CSR & US_CSR_TXRDY) != US_CSR_TXRDY)
     ;
 
   // Send character
   _pUsart->US_THR = uc_data ;
+#endif
   return 1;
 }
 
 void USARTClass::IrqHandler( void )
 {
+#if defined(__SAM3X8E__)
   uint32_t status = _pUsart->US_CSR;
 
   // Did we receive data ?
@@ -134,5 +143,6 @@ void USARTClass::IrqHandler( void )
 	// TODO: error reporting outside ISR
     _pUsart->US_CR |= US_CR_RSTSTA;
   }
+#endif
 }
 

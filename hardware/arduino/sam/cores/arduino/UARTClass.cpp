@@ -36,6 +36,8 @@ UARTClass::UARTClass( Uart* pUart, IRQn_Type dwIrq, uint32_t dwId, RingBuffer* p
 
 void UARTClass::begin( const uint32_t dwBaudRate )
 {
+#if defined(__SAM3X8E__)
+
   // Configure PMC
   pmc_enable_periph_clk( _dwId ) ;
 
@@ -60,6 +62,7 @@ void UARTClass::begin( const uint32_t dwBaudRate )
 
   // Enable receiver and transmitter
   _pUart->UART_CR = UART_CR_RXEN | UART_CR_TXEN ;
+#endif
 }
 
 void UARTClass::end( void )
@@ -67,6 +70,7 @@ void UARTClass::end( void )
   // clear any received data
   _rx_buffer->_iHead = _rx_buffer->_iTail ;
 
+#if defined(__SAM3X8E__)
   // Disable UART interrupt in NVIC
   NVIC_DisableIRQ( _dwIrq ) ;
 
@@ -74,6 +78,7 @@ void UARTClass::end( void )
   flush();
 
   pmc_disable_periph_clk( _dwId ) ;
+#endif
 }
 
 int UARTClass::available( void )
@@ -102,24 +107,29 @@ int UARTClass::read( void )
 
 void UARTClass::flush( void )
 {
+#if defined(__SAM3X8E__)
   // Wait for transmission to complete
   while ((_pUart->UART_SR & UART_SR_TXRDY) != UART_SR_TXRDY)
     ;
+#endif
 }
 
 size_t UARTClass::write( const uint8_t uc_data )
 {
+#if defined(__SAM3X8E__)
   // Check if the transmitter is ready
   while ((_pUart->UART_SR & UART_SR_TXRDY) != UART_SR_TXRDY)
     ;
 
   // Send character
   _pUart->UART_THR = uc_data;
+#endif
   return 1;
 }
 
 void UARTClass::IrqHandler( void )
 {
+#if defined(__SAM3X8E__)
   uint32_t status = _pUart->UART_SR;
 
   // Did we receive data ?
@@ -133,5 +143,6 @@ void UARTClass::IrqHandler( void )
 	// TODO: error reporting outside ISR
     _pUart->UART_CR |= UART_CR_RSTSTA;
   }
+#endif
 }
 

@@ -32,7 +32,9 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#if defined (__SAM3X8E__)
 #include "sam.h"
+#endif
 #if defined (  __GNUC__  ) /* GCC CS3 */
   #include <sys/types.h>
   #include <sys/stat.h>
@@ -111,12 +113,14 @@ extern int _write( int file, char *ptr, int len )
     {
 //        UART_PutChar( *ptr ) ;
 
+#if defined(__SAM3X8E__)
 		// Check if the transmitter is ready
 		  while ((UART->UART_SR & UART_SR_TXRDY) != UART_SR_TXRDY)
 			;
 
 		  // Send character
 		  UART->UART_THR = *ptr;
+#endif
     }
 
     return iIndex ;

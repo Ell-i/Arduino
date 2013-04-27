@@ -54,6 +54,8 @@ uint32_t analogRead(uint32_t ulPin)
   uint32_t ulValue = 0;
   uint32_t ulChannel;
 
+#if defined(__SAM3X8E__)
+
   if (ulPin < A0)
     ulPin += A0;
 
@@ -172,8 +174,11 @@ uint32_t analogRead(uint32_t ulPin)
 	}
 #endif
 
+#endif
 	return ulValue;
 }
+
+#if defined(__SAM3X8E__)
 
 static void TC_SetCMR_ChannelA(Tc *tc, uint32_t chan, uint32_t v)
 {
@@ -185,9 +190,12 @@ static void TC_SetCMR_ChannelB(Tc *tc, uint32_t chan, uint32_t v)
 	tc->TC_CHANNEL[chan].TC_CMR = (tc->TC_CHANNEL[chan].TC_CMR & 0xF0FFFFFF) | v;
 }
 
+#endif
+
 static uint8_t PWMEnabled = 0;
 static uint8_t pinEnabled[PINS_COUNT];
 static uint8_t TCChanEnabled[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 
 void analogOutputInit(void) {
 	uint8_t i;
@@ -201,6 +209,8 @@ void analogOutputInit(void) {
 // to digital output.
 void analogWrite(uint32_t ulPin, uint32_t ulValue) {
 	uint32_t attr = g_APinDescription[ulPin].ulPinAttribute;
+
+#if defined(__SAM3X8E__)
 
 	if ((attr & PIN_ATTR_ANALOG) == PIN_ATTR_ANALOG) {
 		EAnalogChannel channel = g_APinDescription[ulPin].ulADCChannelNumber;
@@ -346,6 +356,7 @@ void analogWrite(uint32_t ulPin, uint32_t ulValue) {
 		digitalWrite(ulPin, LOW);
 	else
 		digitalWrite(ulPin, HIGH);
+#endif
 }
 
 #ifdef __cplusplus
