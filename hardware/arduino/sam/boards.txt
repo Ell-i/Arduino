@@ -38,7 +38,7 @@ arduino_due_x.build.vid=0x2341
 arduino_due_x.build.pid=0x003e
 
 ellduino_stm32f051.name=Ell-duino (Serial Cable)
-ellduino_stm32f051.upload.tool=stmflash
+ellduino_stm32f051.upload.tool=stm32flash
 ellduino_stm32f051.upload.protocol=stm
 ellduino_stm32f051.upload.maximum_size=65535
 ellduino_stm32f051.upload.wait_for_upload_port=false
