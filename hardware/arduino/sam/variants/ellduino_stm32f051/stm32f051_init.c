@@ -190,19 +190,28 @@ const struct device_register_init_static_32bit general_purpose_io_b[] = {
 const struct device_register_init_static_32bit general_purpose_io_eval[] = {
     D32(GPIOC, MODER,
         0
-        |   GPIO_MODER_MODER0_1 | GPIO_MODER_MODER0_0
-                                 /* 10: PC0  Analog */
-        |   GPIO_MODER_MODER6_0  /* 01: PC6  Output Led4 */
-        |   GPIO_MODER_MODER7_0  /* 01: PC7  Output Led4 */
+        |   GPIO_MODER_MODER0_0
+        |   GPIO_MODER_MODER1_0
+        |   GPIO_MODER_MODER2_0
+        |   GPIO_MODER_MODER3_0
+        |   GPIO_MODER_MODER4_0
+        |   GPIO_MODER_MODER5_0
+        |   GPIO_MODER_MODER6_0  /* 01: PC6  Output */
+        |   GPIO_MODER_MODER7_0  /* 01: PC7  Output */
         |   GPIO_MODER_MODER8_0  /* 01: PC8  Output Led4 */
         |   GPIO_MODER_MODER9_0  /* 01: PC9  Output Led3 */
         |   GPIO_MODER_MODER10_0 /* 01: PC10 Output Led2 */
         |   GPIO_MODER_MODER11_0 /* 01: PC11 Output Led1 */
         |   GPIO_MODER_MODER12_0 /* 01: PC12 Output Led0 */
-        | ! GPIO_MODER_MODER13   /* 00: PC13 Input  WOL  */
         ),
     D32(GPIOC, OTYPER,
         0
+        | ! GPIO_OTYPER_OT_0     /* PC0  GPIO output Push-pull */
+        | ! GPIO_OTYPER_OT_1     /* PC1  GPIO output Push-pull */
+        | ! GPIO_OTYPER_OT_2     /* PC2  GPIO output Push-pull */
+        | ! GPIO_OTYPER_OT_3     /* PC3  GPIO output Push-pull */
+        | ! GPIO_OTYPER_OT_4     /* PC4  GPIO output Push-pull */
+        | ! GPIO_OTYPER_OT_5     /* PC5  GPIO output Push-pull */
         | ! GPIO_OTYPER_OT_6     /* PC6  GPIO output Push-pull */
         | ! GPIO_OTYPER_OT_7     /* PC7  GPIO output Push-pull */
         | ! GPIO_OTYPER_OT_8     /* PC8  GPIO output Push-pull */
@@ -214,6 +223,12 @@ const struct device_register_init_static_32bit general_purpose_io_eval[] = {
     /* See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet */
     D32(GPIOC, OSPEEDR,
         0
+        | ! GPIO_OSPEEDER_OSPEEDR0  /* 00: PC0 GPIO */
+        | ! GPIO_OSPEEDER_OSPEEDR1  /* 00: PC1 GPIO */
+        | ! GPIO_OSPEEDER_OSPEEDR2  /* 00: PC2 GPIO */
+        | ! GPIO_OSPEEDER_OSPEEDR3  /* 00: PC3 GPIO */
+        | ! GPIO_OSPEEDER_OSPEEDR4  /* 00: PC4 GPIO */
+        | ! GPIO_OSPEEDER_OSPEEDR5  /* 00: PC5 GPIO */
         | ! GPIO_OSPEEDER_OSPEEDR6  /* 00: PC6 GPIO */
         | ! GPIO_OSPEEDER_OSPEEDR7  /* 00: PC7 GPIO */
         | ! GPIO_OSPEEDER_OSPEEDR8  /* 00: PC8 GPIO */
@@ -224,14 +239,19 @@ const struct device_register_init_static_32bit general_purpose_io_eval[] = {
         ),
     D32(GPIOC, PUPDR,
         0
-        | ! GPIO_PUPDR_PUPDR6    /* PC6  -> Led6    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR7    /* PC7  -> Led5    no pull resistors */
+        | ! GPIO_PUPDR_PUPDR0    /* PC0  ->    no pull resistors */
+        | ! GPIO_PUPDR_PUPDR1    /* PC1  ->    no pull resistors */
+        | ! GPIO_PUPDR_PUPDR2    /* PC2  ->    no pull resistors */
+        | ! GPIO_PUPDR_PUPDR3    /* PC3  ->    no pull resistors */
+        | ! GPIO_PUPDR_PUPDR4    /* PC4  ->    no pull resistors */
+        | ! GPIO_PUPDR_PUPDR5    /* PC5  ->    no pull resistors */
+        | ! GPIO_PUPDR_PUPDR6    /* PC6  ->    no pull resistors */
+        | ! GPIO_PUPDR_PUPDR7    /* PC7  ->    no pull resistors */
         | ! GPIO_PUPDR_PUPDR8    /* PC8  -> Led4    no pull resistors */
         | ! GPIO_PUPDR_PUPDR9    /* PC9  -> Led3    no pull resistors */
         | ! GPIO_PUPDR_PUPDR10   /* PC9  -> Led2    no pull resistors */
         | ! GPIO_PUPDR_PUPDR11   /* PC9  -> Led1    no pull resistors */
         | ! GPIO_PUPDR_PUPDR12   /* PC9  -> Led0    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR13_0 /* PC13 <- WOL     pull up*/
         ),
 };
 
@@ -471,9 +491,11 @@ const device_register_init_descriptor_t dri_tables[] = {
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOA, general_purpose_io_a),
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOB, general_purpose_io_b),
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOC, general_purpose_io_eval),
+#if 0
     DRI_DESCRIPTOR_WAITED_32BIT(ADC1,  adc_wait_for_calibrate),
     DRI_DESCRIPTOR_STATIC_32BIT(ADC1,  adc_init),
     DRI_DESCRIPTOR_STATIC_32BIT(ADC,   adc_init2),
+#endif
 };
 
 /*

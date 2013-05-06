@@ -7,21 +7,14 @@
 #ifndef ELLDUINO_STM32F051_CHIP_H
 #define ELLDUINO_STM32F051_CHIP_H 1
 
+#include <stm32f0xx.h>
+
+#undef ADC1 /* Arduino.h uses for EAnalogChannel */
+#define ADC_1 ((ADC_TypeDef *) ADC1_BASE)
+
 /* Arduino.h */
 
 typedef int Pio, EPioType;
-
-/* wiring.c */
-
-extern struct SysTick {
-    int VAL;
-    int CTRL;
-    int LOAD;
-} *SysTick;
-
-extern int SystemCoreClock;
-
-#define SysTick_CTRL_COUNTFLAG_Msk 0
 
 /* wiring_analog.c */
 
@@ -30,7 +23,6 @@ extern int SystemCoreClock;
 /* UARTClass.h */
 
 typedef int Uart;
-typedef int IRQn_Type;
 
 /* USARTClass.h */
 
