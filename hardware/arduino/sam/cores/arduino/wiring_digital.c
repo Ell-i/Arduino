@@ -22,9 +22,10 @@
  extern "C" {
 #endif
 
+#if defined(__SAM3X8E__)
+
 extern void pinMode( uint32_t ulPin, uint32_t ulMode )
 {
-#if defined(__SAM3X8E__)
 
 	if ( g_APinDescription[ulPin].ulPinType == PIO_NOT_A_PIN )
     {
@@ -70,12 +71,10 @@ extern void pinMode( uint32_t ulPin, uint32_t ulMode )
         default:
         break ;
     }
-#endif
 }
 
 extern void digitalWrite( uint32_t ulPin, uint32_t ulVal )
 {
-#if defined(__SAM3X8E__)
   /* Handle */
 	if ( g_APinDescription[ulPin].ulPinType == PIO_NOT_A_PIN )
   {
@@ -90,12 +89,10 @@ extern void digitalWrite( uint32_t ulPin, uint32_t ulVal )
   {
     PIO_SetOutput( g_APinDescription[ulPin].pPort, g_APinDescription[ulPin].ulPin, ulVal, 0, PIO_PULLUP ) ;
   }
-#endif
 }
 
 extern int digitalRead( uint32_t ulPin )
 {
-#if defined(__SAM3X8E__)
 	if ( g_APinDescription[ulPin].ulPinType == PIO_NOT_A_PIN )
     {
         return LOW ;
@@ -107,8 +104,9 @@ extern int digitalRead( uint32_t ulPin )
     }
 
 	return LOW ;
-#endif
 }
+
+#endif
 
 #ifdef __cplusplus
 }
