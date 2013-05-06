@@ -81,3 +81,10 @@ tools.stm32flash.upload.params.quiet=
 tools.stm32flash.upload.pattern="{path}/{cmd}" {upload.verbose} -w {build.path}/{build.project_name}.bin -v -g0 /dev/{serial.port.file}
 tools.stm32flash.upload.pattern.windows="{path}/{cmd}" {upload.verbose} -w {build.path}/{build.project_name}.bin -v -g0 {serial.port.file}
 
+tools.stflash.cmd=st-flash
+tools.stflash.cmd.windows=stflash.exe
+tools.stflash.path={runtime.ide.path}/hardware/tools
+tools.stflash.upload.params.verbose=
+tools.stflash.upload.params.quiet=
+tools.stflash.upload.pattern="{path}/{cmd}" write {build.path}/{build.project_name}.bin 0x08000000
+tools.stflash.upload.pattern.windows="{path}/{cmd}" write {build.path}/{build.project_name}.bin 0x08000000
