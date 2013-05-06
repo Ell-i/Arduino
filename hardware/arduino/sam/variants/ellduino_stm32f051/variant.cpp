@@ -7,6 +7,10 @@ extern "C" {
 
 extern void Peripheral_Init(void);
 
+#ifndef assert
+#define assert(x) do { while (!x) { GPIOC->ODR ^= GPIO_ODR_11; for (volatile int i = 0; i < 100; i++); } } while (0)
+#endif
+
 /*
  * The following derived from STM Copyrighted work.
  * If you remove that or modify it enough, please consider
@@ -14,10 +18,6 @@ extern void Peripheral_Init(void);
  */
 
 extern __I uint8_t APBAHBPrescTable[16];
-
-#ifndef assert
-#define assert(x) do { while (!x) { GPIOC->ODR ^= GPIO_ODR_11; for (volatile int i = 0; i < 100; i++); } } while (0)
-#endif
 
 uint32_t
 RCC_GetHCLKFreq() {
