@@ -46,7 +46,7 @@ CFLAGS += -Wmissing-prototypes -Wmissing-declarations
 CFLAGS += -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations
 CFLAGS += -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wlong-long
 CFLAGS += -Wunreachable-code
-CFLAGS += -Wcast-align
+#CFLAGS += -Wcast-align
 #CFLAGS += -Wmissing-noreturn
 #CFLAGS += -Wconversion
 
