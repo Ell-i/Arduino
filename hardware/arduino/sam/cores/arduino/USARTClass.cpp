@@ -63,6 +63,20 @@ void USARTClass::begin( const uint32_t dwBaudRate )
   // Enable receiver and transmitter
   _pUsart->US_CR = US_CR_RXEN | US_CR_TXEN ;
 #endif
+#if defined(__STM32F051__)
+  /* Change the GPIO pins PA9 and PA10 to the USART mode */
+  /* XXX: Works only for Serial for now, not for Serial1 */
+  GPIOA->AFR[1] &= ~(GPIO_AFRH_AFRH1     | GPIO_AFRH_AFRH2    );
+  GPIOA->AFR[1] |=  (GPIO_AFRx_AFRx1_AF1 | GPIO_AFRx_AFRx2_AF1);
+  GPIOA->MODER  &= ~(GPIO_MODER_MODER9_0  | GPIO_MODER_MODER10_0);
+  GPIOA->MODER  |=  (GPIO_MODER_MODER9_1  | GPIO_MODER_MODER10_1);
+
+  /* Set the baud rate -- use 16 bit oversampling */
+  _pUsart->BRR  = SystemCoreClock / dwBaudRate;
+
+  /* Enable the USART */
+  _pUsart->CR1 |= USART_CR1_UE;
+#endif
 }
 
 void USARTClass::end( void )

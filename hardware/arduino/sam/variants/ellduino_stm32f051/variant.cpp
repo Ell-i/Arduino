@@ -20,7 +20,7 @@ extern void Peripheral_Init(void);
 extern __I uint8_t APBAHBPrescTable[16];
 
 uint32_t
-RCC_GetHCLKFreq() {
+RCC_GetHCLKFreq(void) {
     /* Make sure we are running from PLL from HSI */
     assert((RCC->CFGR & RCC_CFGR_SWS)    == RCC_CFGR_SWS_PLL);
     assert((RCC->CFGR & RCC_CFGR_PLLSRC) == RCC_CFGR_PLLSRC_HSI_Div2);
@@ -45,13 +45,19 @@ void init( void ) {
       before main() gets called, and there is no need to call them again from here.
     */
 
+
     /* SysTick end of count event each 1ms */
     //SysTick_Config(SystemCoreClock / 1000); /* CMSIS */
-    GPIOC->ODR |= GPIO_ODR_10;
+#if 1
+    GPIOC->ODR |= GPIO_ODR_9;
+#endif
     SysTick_Config(RCC_GetHCLKFreq() / 1000); /* CMSIS */
-    GPIOC->ODR &= ~GPIO_ODR_10;
 
     Peripheral_Init();
+
+#if 1
+    GPIOC->ODR &= ~GPIO_ODR_9;
+#endif
 
     assert((SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) == SysTick_CTRL_ENABLE_Msk);
 
@@ -64,10 +70,6 @@ uint32_t GetTickCount(void) {
     return tickCount;
 }
 
-void TimeTick_Increment(void) {
-    tickCount++;
-}
-
 /*
  * XXX: Why does not this come linked from cortex_handlers.c?
  */
@@ -75,15 +77,42 @@ void TimeTick_Increment(void) {
 #include <Reset.h>
 
 extern int sysTickHook(void);
+void SysTick_Handler(void);
 void SysTick_Handler(void)
 {
-	if (sysTickHook())
-		return;
+    if (sysTickHook())
+        return;
 
-	tickReset();
+    tickReset();
 
-	// Increment tick count each ms
-	TimeTick_Increment();
+    // Increment tick count each ms
+    tickCount++;
+}
+
+// ----------------------------------------------------------------------------
+/*
+ * USART objects
+ */
+static RingBuffer rx_buffer;
+
+USARTClass Serial(USART1, USART1_IRQn /* Not used */, 0 /* Not used */, &rx_buffer);
+void serialEvent() __attribute__((weak));
+void serialEvent() { }
+
+void USART1_IRQHandler(void);
+void USART1_IRQHandler(void) {
+  Serial.IrqHandler();
+}
+
+static RingBuffer rx_buffer1;
+
+USARTClass Serial1(USART2, USART2_IRQn /* Not used */, 0 /* Not used */, &rx_buffer1);
+void serialEvent1() __attribute__((weak));
+void serialEvent1() { }
+
+void USART2_IRQHandler(void);
+void USART2_IRQHandler(void) {
+  Serial1.IrqHandler();
 }
 
 #ifdef __cplusplus

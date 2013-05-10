@@ -21,19 +21,68 @@
 #define W32(d, r, m, v) DEVICE_REGISTER_INIT_STRUCT_WAIT_VALUE32((d), r, (m), (v))
 
 
-/* XXX: Do we really need mask here?   */
+/*
+ * Enable the clock for all peripherals possibly used in the Arduino
+ * mode.  We do not care about power saving here, as we assume that
+ * the MCU is running out of PoE or line power.
+ */
+
+/*
+ * XXX: Try to remove the masked initialisation from here,
+ *      paying more attention to what is initialised by default.
+ */
+
 const struct device_register_init_masked_32bit reset_and_clock_control[] = {
-    M32(RCC, APB1ENR,
-        RCC_APB1ENR_TIM2EN   | RCC_APB1ENR_TIM3EN,
-        RCC_APB1ENR_TIM2EN   | RCC_APB1ENR_TIM3EN),
-    M32(RCC, APB2ENR,
-        RCC_APB2ENR_TIM1EN   | RCC_APB2ENR_SYSCFGEN | RCC_APB2ENR_SPI1EN | RCC_APB2ENR_ADC1EN |
-        RCC_APB2ENR_TIM15EN  | RCC_APB2ENR_TIM16EN  | RCC_APB2ENR_TIM17EN,
-        RCC_APB2ENR_TIM1EN   | RCC_APB2ENR_SYSCFGEN | RCC_APB2ENR_SPI1EN | RCC_APB2ENR_ADC1EN |
-        RCC_APB2ENR_TIM15EN  | RCC_APB2ENR_TIM16EN  | RCC_APB2ENR_TIM17EN),
     M32(RCC, AHBENR,
-        RCC_AHBENR_GPIOAEN   | RCC_AHBENR_GPIOBEN   | RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIOFEN,
-        RCC_AHBENR_GPIOAEN   | RCC_AHBENR_GPIOBEN   | RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIOFEN),
+        0
+        /* SRAM and Flash enabled by default */
+        | RCC_AHBENR_GPIOAEN    /* Port A, used as Arduino I/O ports */
+        | RCC_AHBENR_GPIOBEN    /* Port B, used both as Arduino I/O ports and for SPI2 */
+        | RCC_AHBENR_GPIOCEN    /* Port C, used as Arduino I/O ports */
+        | RCC_AHBENR_GPIODEN    /* Port D, used as Arduino I/O ports */
+        | RCC_AHBENR_GPIOFEN    /* Port F, used as Arduino I/O ports */
+        ,
+        0
+        | RCC_AHBENR_GPIOAEN
+        | RCC_AHBENR_GPIOBEN
+        | RCC_AHBENR_GPIOCEN
+        | RCC_AHBENR_GPIODEN
+        | RCC_AHBENR_GPIOFEN
+        ),
+    M32(RCC, APB2ENR,
+        0
+        | RCC_APB2ENR_SYSCFGEN
+        | RCC_APB2ENR_ADC1EN    /* ADC, used for the Arduino analogRead */
+        | RCC_APB2ENR_SPI1EN    /* SPI 1, TBD */
+        | RCC_APB2ENR_USART1EN  /* USART 1, used as Arduino Serial */
+        | RCC_APB2ENR_TIM1EN    /* Timer 1,  used for Arduino PWM D0 (CH3), D1 (CH2), D2 (CH1) */
+        | RCC_APB2ENR_TIM15EN   /* Timer 15, used for Arduino PWM D6 (CH2), D7 (CH1) */
+        ,
+        0
+        | RCC_APB2ENR_SYSCFGEN
+        | RCC_APB2ENR_ADC1EN
+        | RCC_APB2ENR_SPI1EN
+        | RCC_APB2ENR_USART1EN
+        | RCC_APB2ENR_TIM1EN
+        | RCC_APB2ENR_TIM15EN
+        ),
+    M32(RCC, APB1ENR,
+        0
+        | RCC_APB1ENR_TIM2EN   /* Timer 2,  used for Arduino PWM D8 (CH3), D9 (CH4), D10 (CH1), D13 (CH2) */
+        | RCC_APB1ENR_TIM3EN   /* Timer 3,  used for Arduino PWM D3 (CH4), D4 (CH3), D11 (CH2), D12 (CH1) */
+        | RCC_APB1ENR_TIM14EN  /* Timer 14, used for Arduino PWM D5 (CH1) */
+        | RCC_APB1ENR_SPI2EN   /* SPI 2, used for communicating with ENC28J60 */
+        | RCC_APB1ENR_USART2EN /* USART 2, used as Arduino Serial */
+        | RCC_APB1ENR_DACEN    /* DAC, used as Arduino DUE DAC 1 */
+        ,
+        0
+        | RCC_APB1ENR_TIM2EN
+        | RCC_APB1ENR_TIM3EN
+        | RCC_APB1ENR_TIM14EN
+        | RCC_APB1ENR_SPI2EN
+        | RCC_APB1ENR_USART2EN
+        | RCC_APB1ENR_DACEN
+        ),
 };
 
 /*
@@ -54,231 +103,399 @@ const struct device_register_init_masked_32bit reset_and_clock_control[] = {
        )
 
 const struct device_register_init_masked_32bit nvic[] = {
-    ENABLE_INTERRUPT(TIM3_IRQn, 3),
-    ENABLE_INTERRUPT(SPI1_IRQn, 3), /* Lowest priority */
-};
-
-/* Port A */
-const struct device_register_init_static_32bit general_purpose_io_a[] = {
-    D32(GPIOA, MODER,
-        0
-        | ! GPIO_MODER_MODER0    /* 00: PA0  Input  USER */
-        | ! GPIO_MODER_MODER1    /* 00: PA1  Input  INT */
-        |   GPIO_MODER_MODER2_1  /* 10: PA2  AF     TIM15 CH1 */
-        |   GPIO_MODER_MODER3_0  /* 01: PA3  Output RESET */
-        |   GPIO_MODER_MODER4_1  /* 10: PA4  AF     SPI NSS */
-        |   GPIO_MODER_MODER5_1  /* 10: PA5  AF     SPI CLK */
-        |   GPIO_MODER_MODER6_1  /* 10: PA6  AF     SPI MISO */
-        |   GPIO_MODER_MODER7_1  /* 10: PA7  AF     SPI MOSI */
-        |   GPIO_MODER_MODER9_1  /* 10: PA9  AF     USART1 TX */
-        |   GPIO_MODER_MODER10_1 /* 10: PA10 AF     USART1_RX */
-        |   GPIO_MODER_MODER13_1 /* 10: PA13 AF     SWDAT, reset-time value */
-        |   GPIO_MODER_MODER14_1 /* 10: PA14 AF     SWCLK, reset-time value */
-        ),
-    D32(GPIOA, OTYPER,
-        0
-        | ! GPIO_OTYPER_OT_2     /* PA2 AF output   Push-pull */
-        | ! GPIO_OTYPER_OT_3     /* PA3 GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_4     /* PA4 SPI NSS     Push-pull */
-        | ! GPIO_OTYPER_OT_5     /* PA5 SPI CLK     Push-pull */
-        | ! GPIO_OTYPER_OT_7     /* PA7 SPI MOSI    Push-pull */
-        | ! GPIO_OTYPER_OT_9     /* PA9 USART TX    Push-pull */
-        ),
-    /* See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet */
-    D32(GPIOA, OSPEEDR,
-        0
-        |   GPIO_OSPEEDER_OSPEEDR2
-        |   GPIO_OSPEEDER_OSPEEDR3 
-        |   GPIO_OSPEEDER_OSPEEDR4
-        |   GPIO_OSPEEDER_OSPEEDR5
-        |   GPIO_OSPEEDER_OSPEEDR7
-        |   GPIO_OSPEEDER_OSPEEDR9
-        |   GPIO_OSPEEDER_OSPEEDR13 /* Reset-time value */
-        | ! GPIO_OSPEEDER_OSPEEDR14 /* Reset-time value */
-        ),
-    D32(GPIOA, PUPDR,
-        0
-        |   GPIO_PUPDR_PUPDR0_1  /* PA0  <- USER    pull down */
-        |   GPIO_PUPDR_PUPDR1_0  /* PA1  <- INT     pull up */
-        | ! GPIO_PUPDR_PUPDR2    /* PA2  -> Blue    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR3    /* PA3  -> RESET   no pull resistors */
-        | ! GPIO_PUPDR_PUPDR4    /* PA4  -> CS      no pull resistors */
-        | ! GPIO_PUPDR_PUPDR5    /* PA5  -> SCK     no pull resistors */
-        |   GPIO_PUPDR_PUPDR6_1  /* PA6  <- MISO    pull down */
-        | ! GPIO_PUPDR_PUPDR7    /* PA7  -> MOSI    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR9    /* PA9  -> TX      no pull resistors */
-        |   GPIO_PUPDR_PUPDR10_1 /* PA10 <- RX      pull down */
-        |   GPIO_PUPDR_PUPDR13_0 /* PA13 <> SWDAT   pull up,   reset-time value */
-        |   GPIO_PUPDR_PUPDR14_1 /* PA10 <- SWCLK   pull down, reset-time value */
-        ),
-    D32(GPIOA, AFR[0],
-        0
-        | ! GPIO_AFRL_AFRL2      /* PA2  AF0 TIM15_CH1 */
-        | ! GPIO_AFRL_AFRL4      /* PA4  AF0 SPI */
-        | ! GPIO_AFRL_AFRL5      /* PA5  AF0 SPI */
-        | ! GPIO_AFRL_AFRL6      /* PA6  AF0 SPI */
-        | ! GPIO_AFRL_AFRL7      /* PA7  AF0 SPI */
-        ),
-    D32(GPIOA, AFR[1],
-        0
-#define GPIO_AFRL_AFRL1_AF1            ((uint32_t)0x00000010)
-#define GPIO_AFRL_AFRL2_AF1            ((uint32_t)0x00000100)
-        |   GPIO_AFRL_AFRL1_AF1  /* PA9  AF1 TX */
-        |   GPIO_AFRL_AFRL2_AF1  /* PA10 AF1 RX */
-        | ! GPIO_AFRL_AFRL5      /* PA13 AF0 SWD, reset-time value */
-        | ! GPIO_AFRL_AFRL6      /* PA14 AF0 SWC, reset-time value */
-        ),
-};
-
-/* Port B */
-const struct device_register_init_static_32bit general_purpose_io_b[] = {
-    D32(GPIOB, MODER,
-        0
-        |   GPIO_MODER_MODER1_1 | GPIO_MODER_MODER1_0
-                                  /* 11: PB1   Analog */
-        |   GPIO_MODER_MODER8_1   /* 10: PB8   AF */
-        |   GPIO_MODER_MODER9_1   /* 10: PB9   AF */
-        |   GPIO_MODER_MODER13_1  /* 10: PB13  AF */
-        |   GPIO_MODER_MODER14_1  /* 10: PB14  AF */
-        |   GPIO_MODER_MODER15_1  /* 10: PB15  AF */
-        ),
-    D32(GPIOB, OTYPER,
-        0
-        | ! GPIO_OTYPER_OT_8      /* PB8  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_9      /* PB9  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_13     /* PB13 GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_14     /* PB14 GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_15     /* PB15 GPIO output Push-pull */
-        ),
-    /* See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet */
-    D32(GPIOB, OSPEEDR,
-        0
-        | ! GPIO_OSPEEDER_OSPEEDR8
-        | ! GPIO_OSPEEDER_OSPEEDR9
-        | ! GPIO_OSPEEDER_OSPEEDR13
-        | ! GPIO_OSPEEDER_OSPEEDR14
-        | ! GPIO_OSPEEDER_OSPEEDR15
-        ),
-    D32(GPIOB, PUPDR,
-        0
-        | ! GPIO_PUPDR_PUPDR1   /* PB1  no pull resistors */
-        | ! GPIO_PUPDR_PUPDR8   /* PB8  no pull resistors */
-        | ! GPIO_PUPDR_PUPDR9   /* PB9  no pull resistors */
-        | ! GPIO_PUPDR_PUPDR13  /* PB13 no pull resistors */
-        | ! GPIO_PUPDR_PUPDR14  /* PB14 no pull resistors */
-        | ! GPIO_PUPDR_PUPDR15  /* PB15 no pull resistors */
-        ),
-#define GPIO_AFRL_AFRL0_AF2            ((uint32_t)0x00000002)
-#define GPIO_AFRL_AFRL1_AF2            ((uint32_t)0x00000020)
-#define GPIO_AFRL_AFRL2_AF2            ((uint32_t)0x00000200)
-#define GPIO_AFRL_AFRL3_AF2            ((uint32_t)0x00002000)
-#define GPIO_AFRL_AFRL4_AF2            ((uint32_t)0x00020000)
-#define GPIO_AFRL_AFRL5_AF2            ((uint32_t)0x00200000)
-#define GPIO_AFRL_AFRL6_AF2            ((uint32_t)0x02000000)
-#define GPIO_AFRL_AFRL7_AF2            ((uint32_t)0x20000000)
-    D32(GPIOB, AFR[1],
-        0
-        |   GPIO_AFRL_AFRL0_AF2 /* PB8  AF2 TIM16_CH1  */
-        |   GPIO_AFRL_AFRL1_AF2 /* PB9  AF2 TIM17_CH1  */
-        |   GPIO_AFRL_AFRL5_AF2 /* PB13 AF2 TIM1_CH1N */
-        |   GPIO_AFRL_AFRL6_AF2 /* PB14 AF2 TIM1_CH2N */
-        |   GPIO_AFRL_AFRL7_AF2 /* PB15 AF2 TIM1_CH3N */
-        ),
-};
-
-/* Port C -- Eval and debug functions, TIM15 */
-const struct device_register_init_static_32bit general_purpose_io_eval[] = {
-    D32(GPIOC, MODER,
-        0
-        |   GPIO_MODER_MODER0_0
-        |   GPIO_MODER_MODER1_0
-        |   GPIO_MODER_MODER2_0
-        |   GPIO_MODER_MODER3_0
-        |   GPIO_MODER_MODER4_0
-        |   GPIO_MODER_MODER5_0
-        |   GPIO_MODER_MODER6_0  /* 01: PC6  Output */
-        |   GPIO_MODER_MODER7_0  /* 01: PC7  Output */
-        |   GPIO_MODER_MODER8_0  /* 01: PC8  Output Led4 */
-        |   GPIO_MODER_MODER9_0  /* 01: PC9  Output Led3 */
-        |   GPIO_MODER_MODER10_0 /* 01: PC10 Output Led2 */
-        |   GPIO_MODER_MODER11_0 /* 01: PC11 Output Led1 */
-        |   GPIO_MODER_MODER12_0 /* 01: PC12 Output Led0 */
-        ),
-    D32(GPIOC, OTYPER,
-        0
-        | ! GPIO_OTYPER_OT_0     /* PC0  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_1     /* PC1  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_2     /* PC2  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_3     /* PC3  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_4     /* PC4  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_5     /* PC5  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_6     /* PC6  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_7     /* PC7  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_8     /* PC8  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_9     /* PC9  GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_10    /* PC10 GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_11    /* PC11 GPIO output Push-pull */
-        | ! GPIO_OTYPER_OT_12    /* PC12 GPIO output Push-pull */
-        ),
-    /* See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet */
-    D32(GPIOC, OSPEEDR,
-        0
-        | ! GPIO_OSPEEDER_OSPEEDR0  /* 00: PC0 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR1  /* 00: PC1 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR2  /* 00: PC2 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR3  /* 00: PC3 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR4  /* 00: PC4 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR5  /* 00: PC5 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR6  /* 00: PC6 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR7  /* 00: PC7 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR8  /* 00: PC8 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR9  /* 00: PC9 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR10 /* 00: PC10 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR11 /* 00: PC11 GPIO */
-        | ! GPIO_OSPEEDER_OSPEEDR12 /* 00: PC12 GPIO */
-        ),
-    D32(GPIOC, PUPDR,
-        0
-        | ! GPIO_PUPDR_PUPDR0    /* PC0  ->    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR1    /* PC1  ->    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR2    /* PC2  ->    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR3    /* PC3  ->    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR4    /* PC4  ->    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR5    /* PC5  ->    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR6    /* PC6  ->    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR7    /* PC7  ->    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR8    /* PC8  -> Led4    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR9    /* PC9  -> Led3    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR10   /* PC9  -> Led2    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR11   /* PC9  -> Led1    no pull resistors */
-        | ! GPIO_PUPDR_PUPDR12   /* PC9  -> Led0    no pull resistors */
-        ),
+    ENABLE_INTERRUPT(SPI2_IRQn, 3), /* Lowest priority */
+    ENABLE_INTERRUPT(USART1_IRQn, 3),
+    ENABLE_INTERRUPT(USART2_IRQn, 3),
 };
 
 /*
- * Timer-counter for LED buck converter.
+ * Arduino (Atmega) pins default to inputs, so they don't need to be
+ * explicitly declared as inputs with pinMode(). Pins configured as
+ * inputs are in a high-impedance state.  Pins configured as OUTPUT
+ * with pinMode() are said to be in a low-impedance state.
+ *
+ * For STM32F051, during and just after reset, the alternate functions
+ * are not active and the I/O ports are configured in input floating
+ * mode, with the exception of PA13 and PA14, which are used by default
+ * by the SWD protocol.  Output is by default push/pull (low impedance)
+ * and low speed, which is good for Arduino compatibility.
+ *
+ * As the reset state of the Arduino Analog input pins are not clearly
+ * defined, we default them also to the input mode.
  */
-const struct device_register_init_static_16bit rgb_buck_pwm[] = {
-    D16(TIM15, CR1, 0),         /* Disable the counter */
-    // D16(TIM15, CR2, 0),      /* Default value */
-    // D16(TIM16, SMCR, 0),     /* Default value */
-    // D16(TIM15, DIER, 0),     /* Default value */
-    D16(TIM15, CCMR1,
+
+/************
+ *  Port A  *
+ ************/
+
+const struct device_register_init_static_32bit general_purpose_io_a[] = {
+    /*
+     * Port mode.  Defaults to Input for all but DAC.
+     */
+    D32(GPIOA, MODER,
         0
-        |   TIM_CCMR1_OC1M_PWM2 /* 111 = CH1 PWM Mode 2 */
+        | ! GPIO_MODER_MODER0    /* 00  PA0  A4 */
+        | ! GPIO_MODER_MODER1    /* 00  PA1  A5 */
+        | ! GPIO_MODER_MODER2    /* 00  PA2  D7, COMP1_INM */
+        | ! GPIO_MODER_MODER3    /* 00  PA3  D6, COMP1_INP */
+        /* Once the DAC channel 1 is enabled, the corresponding GPIO
+         * pin (PA4) is automatically connected to the analog
+         * converter output (DAC1_OUT). In order to avoid parasitic
+         * consumption, the PA4 pin should first be configured to
+         * analog (AIN).
+         */
+        |   GPIO_MODER_MODER4    /* 11  PA4  DAC0 */
+        | ! GPIO_MODER_MODER5    /* 00  PA5  A6 */
+        | ! GPIO_MODER_MODER6    /* 00  PA6  A7 */
+        | ! GPIO_MODER_MODER7    /* 00  PA7  D5 */
+        | ! GPIO_MODER_MODER8    /* 00  PA8  D2 */
+        | ! GPIO_MODER_MODER9    /* 00  PA9  D1 (TX0) */
+        | ! GPIO_MODER_MODER10   /* 00 PA10  D0 (RX0) */
+        | ! GPIO_MODER_MODER11   /* 00 PA11  DAC1  (CTS0), used as input by default */
+        | ! GPIO_MODER_MODER12   /* 00 PA12  CANRX (RTS0), used as input by default */
+#ifdef DISABLE_SWD
+        | ! GPIO_MODER_MODER13   /* 00 PA13  CANTX, SW Data */
+        | ! GPIO_MODER_MODER14   /* 00 PA14  TX2,   SW Clock */
+#else
+        |   GPIO_MODER_MODER13_1 /* 10 PA13 AF     SWDAT, reset-time value */
+        |   GPIO_MODER_MODER14_1 /* 10 PA14 AF     SWCLK, reset-time value */
+#endif
+        | ! GPIO_MODER_MODER15   /* 00 PA15  D10, SPI1_NSS */
+        ),
+    /*
+     * Output type: Push-pull for all Output.  Default value.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOA, OTYPER, 0),
+#endif
+    /*
+     * See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet.
+     * Set the speed to high, as we don't care about power consumption.
+     */
+    D32(GPIOA, OSPEEDR,
+        0
+        |   GPIO_OSPEEDER_OSPEEDR0
+        |   GPIO_OSPEEDER_OSPEEDR1
+        |   GPIO_OSPEEDER_OSPEEDR2
+        |   GPIO_OSPEEDER_OSPEEDR3
+        |   GPIO_OSPEEDER_OSPEEDR4
+        |   GPIO_OSPEEDER_OSPEEDR5
+        |   GPIO_OSPEEDER_OSPEEDR6
+        |   GPIO_OSPEEDER_OSPEEDR7
+        |   GPIO_OSPEEDER_OSPEEDR8
+        |   GPIO_OSPEEDER_OSPEEDR9
+        |   GPIO_OSPEEDER_OSPEEDR10
+        |   GPIO_OSPEEDER_OSPEEDR11
+        |   GPIO_OSPEEDER_OSPEEDR12
+        |   GPIO_OSPEEDER_OSPEEDR13 /* SWDAT, Reset-time value */
+#ifdef DISABLE_SWD
+        |   GPIO_OSPEEDER_OSPEEDR14
+#else
+        | ! GPIO_OSPEEDER_OSPEEDR14 /* SWCLK, Reset-time value */
+#endif
+        |   GPIO_OSPEEDER_OSPEEDR15
+        ),
+    /*
+     * Let the inputs to float.
+     */
+    D32(GPIOA, PUPDR,
+        0
+        | ! GPIO_PUPDR_PUPDR0
+        | ! GPIO_PUPDR_PUPDR1
+        | ! GPIO_PUPDR_PUPDR2
+        | ! GPIO_PUPDR_PUPDR3
+        | ! GPIO_PUPDR_PUPDR4
+        | ! GPIO_PUPDR_PUPDR5
+        | ! GPIO_PUPDR_PUPDR6
+        | ! GPIO_PUPDR_PUPDR7
+        | ! GPIO_PUPDR_PUPDR8
+        | ! GPIO_PUPDR_PUPDR9
+        | ! GPIO_PUPDR_PUPDR10
+        | ! GPIO_PUPDR_PUPDR11
+        | ! GPIO_PUPDR_PUPDR12
+#ifdef DISABLE_SWD
+        | ! GPIO_PUPDR_PUPDR13
+        | ! GPIO_PUPDR_PUPDR14
+#else
+        |   GPIO_PUPDR_PUPDR13_0 /* PA13 <> SWDAT   pull up,   reset-time value */
+        |   GPIO_PUPDR_PUPDR14_1 /* PA10 <- SWCLK   pull down, reset-time value */
+#endif
+        | ! GPIO_PUPDR_PUPDR15
+        ),
+    /*
+     * Pre-select the appropriate default AF for each pin so
+     * that e.g. analogWrite does not need to change it.
+     */
+    D32(GPIOA, AFR[0],
+        0
+        | ! GPIO_AFRL_AFRL0      /* 0   PA0   A6, no alternate function */
+        | ! GPIO_AFRL_AFRL1      /* 0   PA1   A7, no alternate function */
+        |   GPIO_AFRx_AFRx2_AF0  /* 0   PA2   D7, Timer 15 Channel 1 */
+        |   GPIO_AFRx_AFRx3_AF0  /* 0   PA3   D6, Timer 15 Channel 2 */
+        | ! GPIO_AFRL_AFRL4      /* 0   PA4 DAC0, no alternate function */
+        | ! GPIO_AFRL_AFRL5      /* 0   PA5   A4, no alternate function */
+        | ! GPIO_AFRL_AFRL6      /* 0   PA6   A5, no alternate function */
+        |   GPIO_AFRx_AFRx7_AF4  /* 4   PA7   D5, Timer 14 Channel 1 */
+        ),
+    D32(GPIOA, AFR[1],
+        0
+        |   GPIO_AFRx_AFRx0_AF2  /* 2   PA8   D2, Timer 1 Channel 1 */
+        |   GPIO_AFRx_AFRx1_AF2  /* 2   PA9   D1, Timer 1 Channel 2 */
+        |   GPIO_AFRx_AFRx2_AF2  /* 2  PA10   D0, Timer 1 Channel 3 */
+        | ! GPIO_AFRH_AFRH3      /* 0  PA11 DAC1, no alternate function (USART1_CTS?) */
+        | ! GPIO_AFRH_AFRH4      /* 0  PA12  CAN, no alternate function (USART1_RTS?) */
+#ifdef DISABLE_SWD
+        | ! GPIO_AFRH_AFRH5      /* 0  PA13  CAN, no alternate function (SWD) */
+        |   GPIO_AFRx_AFRx6_AF1  /* 1  PA14  TX2, USART2_TX */
+#else
+        |   GPIO_AFRx_AFRx5_AF0  /* 0  PA13  SWD, reset-time value */
+        |   GPIO_AFRx_AFRx6_AF0  /* 0  PA14  SWC, reset-time value */
+#endif
+        |   GPIO_AFRx_AFRx7_AF2  /* 2  PA15  D10, Timer 2 Channel 1 */
+        ),
+
+};
+
+/************
+ *  Port B  *
+ ************/
+
+const struct device_register_init_static_32bit general_purpose_io_b[] = {
+    /*
+     * Port mode.  Defaults to Input for B0-B11.  B12-B15 used for SPI.
+     */
+    D32(GPIOB, MODER,
+        0
+        | ! GPIO_MODER_MODER0    /* 00  PB0  A10 */
+        | ! GPIO_MODER_MODER1    /* 00  PB1  A11 */
+        | ! GPIO_MODER_MODER2    /* 00  PB2  (NPCS0) */
+        | ! GPIO_MODER_MODER3    /* 00  PB3  D13 SPI1_SCK  Amber Led "L" */
+        | ! GPIO_MODER_MODER4    /* 00  PB4  D12 SPI1_MISO */
+        | ! GPIO_MODER_MODER5    /* 00  PB5  D11 SPI1_MOSI */
+        | ! GPIO_MODER_MODER6    /* 00  PB6  TX1 */
+        | ! GPIO_MODER_MODER7    /* 00  PB7  RX1 */
+        | ! GPIO_MODER_MODER8    /* 00  PB8  SCL, also FM+, also CEC */
+        | ! GPIO_MODER_MODER9    /* 00  PB9  SDA, also FM+, also IR */
+        | ! GPIO_MODER_MODER10   /* 00 PB10  D8 */
+        | ! GPIO_MODER_MODER11   /* 00 PB11  D9 */
+        |   GPIO_MODER_MODER12_1 /* 10 PB12  SPI2_NSS: XXX Is this right? */
+        |   GPIO_MODER_MODER13_1 /* 10 PB13  SPI2_SCK */
+        |   GPIO_MODER_MODER14_1 /* 10 PB14  SPI2_MISO */
+        |   GPIO_MODER_MODER15_1 /* 10 PB15  SPI2_MOSI */
+        ),
+    /*
+     * Output type: Push-pull for all Output.  Default value.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOB, OTYPER, 0),
+#endif
+    /*
+     * See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet.
+     * Set the speed to high, as we don't care about power consumption.
+     */
+    D32(GPIOB, OSPEEDR, ~0),
+    /*
+     * Let the inputs to float.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOB, PUPDR, 0),
+#endif
+    /*
+     * Pre-select the appropriate default AF for each pin so
+     * that e.g. analogWrite does not need to change it.
+     */
+    D32(GPIOB, AFR[0],
+        0
+        | ! GPIO_AFRL_AFRL0      /* 0  PB0  A10, no alternate function */
+        | ! GPIO_AFRL_AFRL1      /* 0  PB1  A11, no alternate function */
+        | ! GPIO_AFRL_AFRL2      /* 0  PB2  (NPCS0) */
+        |   GPIO_AFRx_AFRx3_AF2  /* 2  PB3  D13, Timer 2 Channel 2 */
+        |   GPIO_AFRx_AFRx4_AF1  /* 1  PB4  D12, Timer 3 Channel 1 */
+        |   GPIO_AFRx_AFRx5_AF1  /* 1  PB5  D11, Timer 3 Channel 2 */
+        |   GPIO_AFRx_AFRx6_AF0  /* 0  PB6  TX1  USART1_TX */
+        |   GPIO_AFRx_AFRx7_AF0  /* 0  PB7  RX1  USART1_RX */
+        ),
+    D32(GPIOB, AFR[1],
+        0
+        |   GPIO_AFRx_AFRx0_AF1  /* 1  PB8  SCL  I2C1_SCL */
+        |   GPIO_AFRx_AFRx1_AF1  /* 1  PB9  SDA  I2C1_SDA */
+        |   GPIO_AFRx_AFRx2_AF2  /* 2 PB10  D8, Timer 2 Channel 3 */
+        |   GPIO_AFRx_AFRx3_AF2  /* 2 PB11  D9, Timer 2 Channel 4 */
+
+        |   GPIO_AFRx_AFRx4_AF0  /* 0 PB12  SPI2_NSS  ENC28J60 */
+        |   GPIO_AFRx_AFRx5_AF0  /* 0 PB13  SPI2_SCK  ENC28J60 */
+        |   GPIO_AFRx_AFRx6_AF0  /* 0 PB14  SPI2_MISO ENC28J60 */
+        |   GPIO_AFRx_AFRx7_AF0  /* 0 PB15  SPI2_MOSI ENC28J60 */
+        ),
+};
+
+/************
+ *  Port C  *
+ ************/
+
+const struct device_register_init_static_32bit general_purpose_io_c[] = {
+    D32(GPIOC, MODER,
+        0
+        | ! GPIO_MODER_MODER0    /* 00  PC0  A0 */
+        | ! GPIO_MODER_MODER1    /* 00  PC1  A1 */
+        | ! GPIO_MODER_MODER2    /* 00  PC2  A2 */
+        | ! GPIO_MODER_MODER3    /* 00  PC3  A3 */
+        | ! GPIO_MODER_MODER4    /* 00  PC4  A8 */
+        | ! GPIO_MODER_MODER5    /* 00  PC5  A9 */
+        | ! GPIO_MODER_MODER6    /* 00  PC6  TX3 */
+        | ! GPIO_MODER_MODER7    /* 00  PC7  RX3 */
+#ifdef DISABLE_DISCOVERY_LEDS
+        | ! GPIO_MODER_MODER8    /* 00  PC8  D4, Timer 3 Channel 3 */
+        | ! GPIO_MODER_MODER9    /* 00  PC9  D5, Timer 3 Channel 4 */
+#else
+        |   GPIO_MODER_MODER8_0  /* 01: PC8  Discovery board Blue LED */
+        |   GPIO_MODER_MODER9_0  /* 01: PC9  Discovery board Green LED */
+#endif
+        | ! GPIO_MODER_MODER10   /* 00 PC10  INT  ENC28J60 */
+        |   GPIO_MODER_MODER11_0 /* 01 PC11  RES  ENC28J60 */
+        | ! GPIO_MODER_MODER12   /* 00 PC12  N/C */
+        | ! GPIO_MODER_MODER13   /* 00 PC13  RTC */
+        | ! GPIO_MODER_MODER14   /* 00 PC14  N/C */
+        | ! GPIO_MODER_MODER15   /* 00 PC15  N/C */
+        ),
+    /*
+     * Output type: Push-pull for all Output.  Default value.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOC, OTYPER, 0),
+#endif
+    /*
+     * See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet.
+     * Set the speed to high, as we don't care about power consumption.
+     *
+     * PC13, PC14 and PC15 are supplied through the power switch.
+     * Since the switch only sinks a limited amount of current
+     * (3 mA), the use of GPIO PC13 to PC15 in output mode is limited:
+     *
+     * - The speed should not exceed 2 MHz with a maximum load of 30 pF
+     * - these GPIOs must not be used as a current sources (e.g. to
+     *   drive an LED).
+     */
+    D32(GPIOC, OSPEEDR, 0x03FFFFFF),
+    /*
+     * Let the inputs to float; outputs are driven by push/pull.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOC, PUPDR, 0),
+#endif
+};
+
+/************
+ *  Port D  *
+ ************/
+
+const struct device_register_init_static_32bit general_purpose_io_d[] = {
+    D32(GPIOD, MODER,
+        0
+        | ! GPIO_MODER_MODER2    /* 00  PD2  (RX2) */
+        ),
+    /*
+     * Output type: Push-pull for all Output.  Default value.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOD, OTYPER, 0),
+#endif
+    /*
+     * See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet.
+     * Set the speed to high, as we don't care about power consumption.
+     */
+    D32(GPIOD, OSPEEDR, ~0),
+    /*
+     * Let the inputs to float; outputs are driven by push/pull.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOD, PUPDR, 0),
+#endif
+};
+
+/************
+ *  Port F  *
+ ************/
+
+const struct device_register_init_static_32bit general_purpose_io_f[] = {
+    D32(GPIOF, MODER,
+        0
+        | ! GPIO_MODER_MODER0    /* 00  PF0 N/C */
+        | ! GPIO_MODER_MODER1    /* 00  PF1 N/C */
+        | ! GPIO_MODER_MODER4    /* 00  PF4 N/C */
+        | ! GPIO_MODER_MODER5    /* 00  PF5 N/C */
+        | ! GPIO_MODER_MODER6_1  /* 10  PF6 SCL1 I2C2_SCL */
+        | ! GPIO_MODER_MODER7_1  /* 10  PF7 SDA1 I2C2_SDA */
+        ),
+    /*
+     * Output type: Push-pull for all Output.  Default value.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOF, OTYPER, 0),
+#endif
+    /*
+     * See page 74 of DM39193 Doc ID 022265 Rev 3 STD32F051x data sheet.
+     * Let the speed to be low, as we don't care about power consumption.
+     */
+    D32(GPIOF, OSPEEDR, ~0),
+    /*
+     * Let the inputs to float; outputs are driven by push/pull.
+     */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(GPIOF, PUPDR, 0),
+#endif
+};
+
+/*
+ * Timer-counter for Arduino PWM output
+ */
+const struct device_register_init_static_16bit arduino_pwm_output[] = {
+    D16(TIM1, CR1, 0),         /* Disable the counter */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D16(TIM1, CR2, 0),      /* Default value */
+    D16(TIM1, SMCR, 0),     /* Default value */
+    D16(TIM1, DIER, 0),     /* Default value */
+#endif
+    D16(TIM1, CCMR1,
+        0
+        |   TIM_CCMR1_OC2M_PWM1 /* 110 = CH2 PWM Mode 1 */
+        |   TIM_CCMR1_OC2PE     /* 1   = CH2 preload register in use */
+        |   TIM_CCMR1_OC2FE     /* 1   = CH2 compare fast mode enabled */
+        | ! TIM_CCMR1_CC2S      /* 00  = CH2 is output */
+        |   TIM_CCMR1_OC1M_PWM1 /* 110 = CH1 PWM Mode 1 */
         |   TIM_CCMR1_OC1PE     /* 1   = CH1 preload register in use */
         |   TIM_CCMR1_OC1FE     /* 1   = CH1 compare fast mode enabled */
         | ! TIM_CCMR1_CC1S      /* 00  = CH1 is output */
         ),
-    // D16(TIM15, CCMR2, 0),    /* Default value */
-    D16(TIM15, CCER,
+    D16(TIM1, CCMR2,
         0
+        |   TIM_CCMR2_OC4M_PWM1 /* 110 = CH4 PWM Mode 1 */
+        |   TIM_CCMR2_OC4PE     /* 1   = CH4 preload register in use */
+        |   TIM_CCMR2_OC4FE     /* 1   = CH4 compare fast mode enabled */
+        | ! TIM_CCMR2_CC4S      /* 00  = CH4 is output */
+        |   TIM_CCMR2_OC3M_PWM1 /* 110 = CH3 PWM Mode 1 */
+        |   TIM_CCMR2_OC3PE     /* 1   = CH3 preload register in use */
+        |   TIM_CCMR2_OC3FE     /* 1   = CH3 compare fast mode enabled */
+        | ! TIM_CCMR2_CC3S      /* 00  = CH3 is output */
+        ),
+    D16(TIM1, CCER,
+        0
+        | ! TIM_CCER_CC4P       /* 0   = OC4  active high */
+        |   TIM_CCER_CC4E       /* 1   = OC4  is actively output */
+        | ! TIM_CCER_CC3NP      /* 0   = OC3N active high */
+        | ! TIM_CCER_CC3NE      /* 0   = OC3N is not output */
+        | ! TIM_CCER_CC3P       /* 0   = OC3  active high */
+        |   TIM_CCER_CC3E       /* 1   = OC3  is actively output */
+        | ! TIM_CCER_CC2NP      /* 0   = OC2N active high */
+        | ! TIM_CCER_CC2NE      /* 0   = OC2N is not output */
+        | ! TIM_CCER_CC2P       /* 0   = OC2  active high */
+        |   TIM_CCER_CC2E       /* 1   = OC2  is actively output */
         | ! TIM_CCER_CC1NP      /* 0   = OC1N active high */
         | ! TIM_CCER_CC1NE      /* 0   = OC1N is not output */
         | ! TIM_CCER_CC1P       /* 0   = OC1  active high */
         |   TIM_CCER_CC1E       /* 1   = OC1  is actively output */
         ),
-    D16(TIM15, BDTR,
+    D16(TIM1, BDTR,
         0
         |   TIM_BDTR_MOE        /* 1   = Main output enable */
         |   TIM_BDTR_AOE        /* 1   = Automatic output enable */
@@ -290,14 +507,21 @@ const struct device_register_init_static_16bit rgb_buck_pwm[] = {
         | ! TIM_BDTR_DTG        /* 0   = No dead time */
         ),
 
-    D16(TIM15, PSC,     4),     /* 48MHz / (4+1) = approx 10 MHz (9.60 MHz) */
-    D16(TIM15, ARR,   480),     /* 9.6 MHz / 480 = 20 kHz */
-    D16(TIM15, CCR1,  481),     /* Boot with 0% duty */
+    D16(TIM1, PSC,   382),      /* 48MHz / (382+1) = approx 125 kHz (125 326 Hz) */
+    D16(TIM1, ARR,   255),      /* 125 kHz / 256 = 490 Hz */
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D16(TIM1, CCR1,  0),        /* Boot with 0% duty */
+    D16(TIM1, CCR2,  0),        /* Boot with 0% duty */
+    D16(TIM1, CCR3,  0),        /* Boot with 0% duty */
+    D16(TIM1, CCR4,  0),        /* Boot with 0% duty */
+#endif
 
-    D16(TIM15, CR1,
+    D16(TIM1, CR1,
         0
         | ! TIM_CR1_CKD         /* 00 = Clock divide by 1 */
         |   TIM_CR1_ARPE        /* 1  = Auto-reload preload enabled, ARR buffered */
+        | ! TIM_CR1_CMS         /* 00 = Edge-aligned mode */
+        | ! TIM_CR1_DIR         /* 0  = Upcounter */
         | ! TIM_CR1_OPM         /* 0  = Continuous */
         | ! TIM_CR1_URS         /* 0  = All UEV sources generate interrupt, if enabled */
         | ! TIM_CR1_UDIS        /* 0  = Update events are generated, shadow registers updated */
@@ -305,52 +529,12 @@ const struct device_register_init_static_16bit rgb_buck_pwm[] = {
         ),
 };
 
-#if 0
-XXX Doesnt work currently, must fix SPI interrupt tolerance first
-/*
- * Timer-counter for interrupt timer
- */
-const struct device_register_init_static_16bit interrupt_timer[] = {
-    D16(TIM3, CR1, 0),        /* Disable the counter */
-    D16(TIM3, CR2,
-        0
-        | ! TIM_CR2_TI1S      /* 0 = CH1 is connected to TI1 */
-        | ! TIM_CR2_MMS       /* 000 = "Reset." TRGO from UG */
-        | ! TIM_CR2_CCDS      /* 0 = DMA when CCX event */
-        ),
-    D16(TIM3, SMCR, 0),
-    D16(TIM3, DIER,
-        0
-        |   TIM_DIER_UIE       /* 1 = Update interrupt enabled */
-        ),
-    D16(TIM3, CCMR1, 0),
-    D16(TIM3, CCMR2, 0),
-    D16(TIM3, CCER, 0),
+/*********
+ *  SPI  *
+ *********/
 
-    /*
-     * Note that TIM3 ARR and CCR registers are 32-bits long, but here we
-     * initialize them with only 16-bits long values
-     */
-    D16(TIM3, ARR,   1000),   /* 1 MHz / 20 = 50 kHz  XXX */
-    D16(TIM3, PSC,    47),    /* 48MHz / 48  = 1 MHz */
-
-    D16(TIM3, CR1,
-        0
-        | ! TIM_CR1_CKD       /* 00 = Clock divide by 1 */
-        |   TIM_CR1_ARPE      /* 1  = Auto-reload preload enabled, ARR buffered */
-        | ! TIM_CR1_CMS       /* 00 = Edge aligned mode */
-        |   TIM_CR1_DIR       /* 1  = Down counter */
-        | ! TIM_CR1_OPM       /* 0  = Continuous */
-        | ! TIM_CR1_URS       /* 0  = All UEV sources */
-        | ! TIM_CR1_UDIS      /* 0  = Enable UEV */
-        |   TIM_CR1_CEN       /* Enable the counter */
-        ),
-};
-#endif
-
-/* SPI */
-const struct device_register_init_static_16bit spi[] = {
-    D16(SPI1, CR2,
+const struct device_register_init_static_16bit spi_enc28j60[] = {
+    D16(SPI2, CR2,
         0
         | ! SPI_CR2_RXDMAEN    /* Disable RX DMA */
         | ! SPI_CR2_TXDMAEN    /* Disable TX DMA */
@@ -366,7 +550,7 @@ const struct device_register_init_static_16bit spi[] = {
         | ! SPI_CR2_LDMARX     /* N/A: RX DMA even */
         | ! SPI_CR2_LDMATX     /* N/A: TX DMA even */
         ),
-    D16(SPI1, CR1,
+    D16(SPI2, CR1,
         0
         | ! SPI_CR1_CPHA       /* Data at first edge */
         | ! SPI_CR1_CPOL       /* Clock low when idle */
@@ -386,7 +570,93 @@ const struct device_register_init_static_16bit spi[] = {
         ),
 };
 
-/* ADC */
+/*********
+ * USART *
+ *********/
+
+const struct device_register_init_static_32bit usart_standby[] = {
+    D32(USART1, CR1,
+        0
+        | ! USART_CR1_EOBIE    /* 0: No smartcard end of block interrupts */
+        | ! USART_CR1_RTOIE    /* 0: No receiver timeout interrupts */
+        | ! USART_CR1_DEAT     /* 0: RS-485 driver enable not used, no assertion time */
+        | ! USART_CR1_DEDT     /* 0: RS-485 driver enable not used, no deassertion time */
+        | ! USART_CR1_OVER8    /* 0: Oversampling by 16 */
+        | ! USART_CR1_CMIE     /* 0: No character matching interrupts */
+        | ! USART_CR1_MME      /* 0: Receiver in active mode permanently */
+        /* The Arduino default is 8 data bits, no parity, one stop bit. */
+        | ! USART_CR1_M        /* 0: 1 Start bit, 8 data bits */
+        | ! USART_CR1_WAKE     /* 0: Not used, active mode permanently */
+        | ! USART_CR1_PCE      /* 0: No parity */
+        | ! USART_CR1_PS       /* 0: Not used, parity not used */
+        | ! USART_CR1_PEIE     /* 0: Not used, parity not used */
+        |   USART_CR1_TXEIE    /* 1: Enable transmit interrupts */
+        | ! USART_CR1_TCIE     /* 0: Disable transmission complete interrupts */
+        |   USART_CR1_RXNEIE   /* 1: Enable receive interrupts */
+        | ! USART_CR1_IDLEIE   /* 0: Disable idel interrupt */
+        | ! USART_CR1_TE       /* 0: Disable transmitter, XXX TBD */
+        |   USART_CR1_RE       /* 1: Enable receiver, effective only once UE will be asserted */
+        | ! USART_CR1_UESM     /* 0: Wakeup from stop disabled */
+        | ! USART_CR1_UE       /* 0: Do not enable the USART, only configure it at this time */
+        ),
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D32(USART1, CR2,
+        0
+        | ! USART_CR2_ADD      /* 0x00: Default value, addressing not used */
+        | ! USART_CR2_RTOEN    /* 0:    Default value, Receiver timeout disabled */
+        | ! USART_CR2_ABRMOD   /* 00:   Default value, autobaud not used */
+        | ! USART_CR2_ABREN    /* 0:    Autobaud rate detection disabled */
+        | ! USART_CR2_MSBFIRST /* 0:    Default value, LSB first */
+        | ! USART_CR2_DATAINV  /* 0:    Default value, normal logic */
+        | ! USART_CR2_TXINV    /* 0:    Default value, TX standard logic levels */
+        | ! USART_CR2_RXINV    /* 0:    Default value, RX standard logic levels */
+        | ! USART_CR2_SWAP     /* 0:    Default value, RX and TX normally connected */
+        | ! USART_CR2_LINEN    /* 0:    Default value, LIN mode disabled */
+        | ! USART_CR2_STOP     /* 00:   1 stop bit */
+        | ! USART_CR2_CLKEN    /* 0:    Default value, SCLK pin disabled */
+        | ! USART_CR2_CPOL     /* 0:    Default value, SCLK not used */
+        | ! USART_CR2_CPHA     /* 0:    Default value, SCLK not used */
+        | ! USART_CR2_LBCL     /* 0:    Default value, SCLK not used */
+        | ! USART_CR2_LBDIE    /* 0:    Default value, LIN mode not used */
+        | ! USART_CR2_LBDL     /* 0:    Default value, LIN mode not used */
+        | ! USART_CR2_ADDM7    /* 0:    Default value, addressing not used */
+        ),
+#endif
+    D32(USART1, CR3,
+        0
+        | ! USART_CR3_WUFIE    /* 0:    Defalut value, wakeup from stop not used */
+        | ! USART_CR3_WUS      /* 00:   Default value, wakeup from stop not used */
+        | ! USART_CR3_SCARCNT  /* 000:  Default value, smartcart mode not used */
+        | ! USART_CR3_DEP      /* 0:    Default value, driver enable not used */
+        | ! USART_CR3_DEM      /* 0:    Default value, driver enable not used */
+        | ! USART_CR3_DDRE     /* 0:    Default value, DMA not used */
+        |   USART_CR3_OVRDIS   /* 1:    Overrun functionality disabled XXX TBD */
+        | ! USART_CR3_ONEBIT   /* 0:    Default value, three sample bit method */
+        | ! USART_CR3_CTSIE    /* 0:    Default value, CTS not used */
+        | ! USART_CR3_CTSE     /* 0:    Default value, CTS not used */
+        | ! USART_CR3_RTSE     /* 0:    Default value, RTS not used */
+        | ! USART_CR3_DMAT     /* 0:    Default value, DMA not used */
+        | ! USART_CR3_DMAR     /* 0:    Default value, DMA not used */
+        | ! USART_CR3_SCEN     /* 0:    Default value, Smartcard mode not used */
+        | ! USART_CR3_NACK     /* 0:    Default value, Smartcard mode not used */
+        | ! USART_CR3_HDSEL    /* 0:    Default value, halfduplex not used */
+        | ! USART_CR3_IRLP     /* 0:    Default value, IrDA not used */
+        | ! USART_CR3_IREN     /* 0:    Default value, IrDA not used */
+        | ! USART_CR3_EIE      /* 0:    Disable error interrupts, XXX TBD */
+        ),
+    /* Default to 115200 bauds at 48 MHz clock, see Table 48 on page 589 of RM0091 */
+    D32(USART1, BRR, 0x1A1),
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    /* Guard time and prescaler not needed as IrDA nor smartcard are used */
+    D32(USART1, GTPR, 0),
+    /* Receiver timeout not used */
+    D32(USART1, RTOR, 0),
+#endif
+};
+
+/*********
+ *  ADC  *
+ *********/
 const struct device_register_init_static_32bit adc_start_calibrate[] = {
     D32(ADC1, CR,
         0
@@ -483,14 +753,25 @@ const struct device_register_init_static_32bit adc_init2[] = {
 const device_register_init_descriptor_t dri_tables[] = {
     DRI_DESCRIPTOR_MASKED_32BIT(RCC,   reset_and_clock_control),
     DRI_DESCRIPTOR_MASKED_32BIT(NVIC,  nvic),
-    DRI_DESCRIPTOR_STATIC_32BIT(ADC1,  adc_start_calibrate),
-    DRI_DESCRIPTOR_STATIC_16BIT(SPI1,  spi),
 #if 0
-    DRI_DESCRIPTOR_STATIC_16BIT(TIM3,  interrupt_timer),
+    DRI_DESCRIPTOR_STATIC_32BIT(ADC1,  adc_start_calibrate),
+    DRI_DESCRIPTOR_STATIC_16BIT(SPI2,  spi_enc28j60),
 #endif
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOA, general_purpose_io_a),
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOB, general_purpose_io_b),
-    DRI_DESCRIPTOR_STATIC_32BIT(GPIOC, general_purpose_io_eval),
+    DRI_DESCRIPTOR_STATIC_32BIT(GPIOC, general_purpose_io_c),
+    DRI_DESCRIPTOR_STATIC_32BIT(GPIOD, general_purpose_io_d),
+    DRI_DESCRIPTOR_STATIC_32BIT(GPIOF, general_purpose_io_f),
+
+    DRI_DESCRIPTOR_STATIC_16BIT(TIM1, arduino_pwm_output),
+    DRI_DESCRIPTOR_STATIC_16BIT(TIM2, arduino_pwm_output),
+    DRI_DESCRIPTOR_STATIC_16BIT(TIM3, arduino_pwm_output),
+    DRI_DESCRIPTOR_STATIC_16BIT(TIM14, arduino_pwm_output),
+    DRI_DESCRIPTOR_STATIC_16BIT(TIM15, arduino_pwm_output),
+#if 0
+    DRI_DESCRIPTOR_STATIC_32BIT(USART1, usart_standby),
+    DRI_DESCRIPTOR_STATIC_32BIT(USART2, usart_standby),
+#endif
 #if 0
     DRI_DESCRIPTOR_WAITED_32BIT(ADC1,  adc_wait_for_calibrate),
     DRI_DESCRIPTOR_STATIC_32BIT(ADC1,  adc_init),
@@ -600,34 +881,22 @@ Peripheral_Init(void) {
     for (unsigned int i = 0; i < COUNT_OF(dri_tables); i++) {
         const device_register_init_descriptor_t *dri = &dri_tables[i];
         switch (dri->dri_type) {
-        case DRI_WAITED_32BIT:
-            Config_Waited32(dri->dri_device, dri->u.dri_masked_32bit, dri->dri_count);
-            break;
-        case DRI_MASKED_32BIT:
-            Config_Masked32(dri->dri_device, dri->u.dri_masked_32bit, dri->dri_count);
+        case DRI_STATIC_16BIT:
+            Config_Static16(dri->dri_device, dri->u.dri_static_16bit, dri->dri_count);
             break;
         case DRI_STATIC_32BIT:
             Config_Static32(dri->dri_device, dri->u.dri_static_32bit, dri->dri_count);
             break;
-        case DRI_STATIC_16BIT:
-            Config_Static16(dri->dri_device, dri->u.dri_static_16bit, dri->dri_count);
+        case DRI_MASKED_32BIT:
+            Config_Masked32(dri->dri_device, dri->u.dri_masked_32bit, dri->dri_count);
+            break;
+        case DRI_WAITED_32BIT:
+            Config_Waited32(dri->dri_device, dri->u.dri_masked_32bit, dri->dri_count);
             break;
         default:
             abort();
             break;
         }
     }
-
-    Config_Static16(TIM15, rgb_buck_pwm, COUNT_OF(rgb_buck_pwm));
-    /* Start next timers suitably delayed */
-    while (TIM15->ARR < 120)
-        ;
-
-    Config_Static16(TIM16, rgb_buck_pwm, COUNT_OF(rgb_buck_pwm));
-    /* Start next timers suitably delayed */
-    while (TIM16->ARR < 120)
-        ;
-
-    Config_Static16(TIM17, rgb_buck_pwm, COUNT_OF(rgb_buck_pwm));
 }
 

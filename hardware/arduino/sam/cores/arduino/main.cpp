@@ -35,21 +35,29 @@ extern void SysTick_Handler( void )
  */
 int main( void )
 {
-	init();
-
-	delay(1);
-
-#if defined(USBCON)
-	USBDevice.attach();
+#if 1
+    RCC->AHBENR  |= RCC_AHBENR_GPIOCEN;
+    GPIOC->MODER |= GPIO_MODER_MODER8_0 | GPIO_MODER_MODER9_0 | GPIO_MODER_MODER10_0;
+    GPIOC->ODR   |= GPIO_ODR_8;
+#endif
+    init();
+#if 1
+    GPIOC->ODR   |= GPIO_ODR_9;
+    delay(1000);
+    GPIOC->ODR   &= ~GPIO_ODR_9;
 #endif
 
-	setup();
+#if defined(USBCON)
+    USBDevice.attach();
+#endif
 
-	for (;;)
-	{
-		loop();
-		if (serialEventRun) serialEventRun();
-	}
+    setup();
+    GPIOC->ODR   &= ~GPIO_ODR_8;
 
-	return 0;
+    for (;;) {
+        loop();
+        if (serialEventRun) serialEventRun();
+    }
+
+    return 0;
 }
