@@ -67,14 +67,14 @@ uint32_t analogRead(uint32_t ulPin)
 	switch ( g_APinDescription[ulPin].ulAnalogChannel )
 	{
 		// Handling ADC 10 bits channels
-		case ADC0 :
-		case ADC1 :
-		case ADC2 :
-		case ADC3 :
-		case ADC4 :
-		case ADC5 :
-		case ADC6 :
-		case ADC7 :
+		case ADC_CH0 :
+		case ADC_CH1 :
+		case ADC_CH2 :
+		case ADC_CH3 :
+		case ADC_CH4 :
+		case ADC_CH5 :
+		case ADC_CH6 :
+		case ADC_CH7 :
 			// Enable the corresponding channel
 			adc_enable_channel( ADC, ulChannel );
 
@@ -97,14 +97,14 @@ uint32_t analogRead(uint32_t ulPin)
 			break;
 
 		// Handling ADC 12 bits channels
-		case ADC8 :
-		case ADC9 :
-		case ADC10 :
-		case ADC11 :
-		case ADC12 :
-		case ADC13 :
-		case ADC14 :
-		case ADC15 :
+		case ADC_CH8 :
+		case ADC_CH9 :
+		case ADC_CH10 :
+		case ADC_CH11 :
+		case ADC_CH12 :
+		case ADC_CH13 :
+		case ADC_CH14 :
+		case ADC_CH15 :
 			// Enable the corresponding channel
 			adc12b_enable_channel( ADC12B, ulChannel );
 
@@ -137,18 +137,18 @@ uint32_t analogRead(uint32_t ulPin)
 	switch ( g_APinDescription[ulPin].ulAnalogChannel )
 	{
 		// Handling ADC 12 bits channels
-		case ADC0 :
-		case ADC1 :
-		case ADC2 :
-		case ADC3 :
-		case ADC4 :
-		case ADC5 :
-		case ADC6 :
-		case ADC7 :
-		case ADC8 :
-		case ADC9 :
-		case ADC10 :
-		case ADC11 :
+		case ADC_CH0 :
+		case ADC_CH1 :
+		case ADC_CH2 :
+		case ADC_CH3 :
+		case ADC_CH4 :
+		case ADC_CH5 :
+		case ADC_CH6 :
+		case ADC_CH7 :
+		case ADC_CH8 :
+		case ADC_CH9 :
+		case ADC_CH10 :
+		case ADC_CH11 :
 
 			// Enable the corresponding channel
 			adc_enable_channel( ADC, ulChannel );
@@ -211,8 +211,8 @@ void analogWrite(uint32_t ulPin, uint32_t ulValue) {
 
 	if ((attr & PIN_ATTR_ANALOG) == PIN_ATTR_ANALOG) {
 		EAnalogChannel channel = g_APinDescription[ulPin].ulADCChannelNumber;
-		if (channel == DA0 || channel == DA1) {
-			uint32_t chDACC = ((channel == DA0) ? 0 : 1);
+		if (channel == DA_CH0 || channel == DA_CH1) {
+			uint32_t chDACC = ((channel == DA_CH0) ? 0 : 1);
 			if (dacc_get_channel_status(DACC_INTERFACE) == 0) {
 				/* Enable clock for DACC_INTERFACE */
 				pmc_enable_periph_clk(DACC_INTERFACE_ID);

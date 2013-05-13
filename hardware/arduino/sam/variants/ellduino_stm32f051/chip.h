@@ -10,9 +10,6 @@
 #include <stm32f0xx.h>
 #include <stm32f0xx_extra.h>
 
-#undef ADC1 /* Arduino.h uses for EAnalogChannel */
-#define ADC_1 ((ADC_TypeDef *) ADC1_BASE)
-
 /* Arduino.h */
 
 typedef int Pio, EPioType;
