@@ -342,14 +342,16 @@ const struct device_register_init_static_32bit general_purpose_io_c[] = {
         | ! GPIO_MODER_MODER3    /* 00  PC3  A3 */
         | ! GPIO_MODER_MODER4    /* 00  PC4  A8 */
         | ! GPIO_MODER_MODER5    /* 00  PC5  A9 */
+#ifdef DISABLE_DISCOVERY_LEDS
         | ! GPIO_MODER_MODER6    /* 00  PC6  TX3 */
         | ! GPIO_MODER_MODER7    /* 00  PC7  RX3 */
-#ifdef DISABLE_DISCOVERY_LEDS
         | ! GPIO_MODER_MODER8    /* 00  PC8  D4, Timer 3 Channel 3 */
         | ! GPIO_MODER_MODER9    /* 00  PC9  D5, Timer 3 Channel 4 */
 #else
-        |   GPIO_MODER_MODER8_0  /* 01: PC8  Discovery board Blue LED */
-        |   GPIO_MODER_MODER9_0  /* 01: PC9  Discovery board Green LED */
+        |   GPIO_MODER_MODER6_0  /* 01  PC6  Debugging */
+        |   GPIO_MODER_MODER7_0  /* 01  PC7  Debugging */
+        |   GPIO_MODER_MODER8_0  /* 01  PC8  Discovery board Blue LED */
+        |   GPIO_MODER_MODER9_0  /* 01  PC9  Discovery board Green LED */
 #endif
         | ! GPIO_MODER_MODER10   /* 00 PC10  INT  ENC28J60 */
         |   GPIO_MODER_MODER11_0 /* 01 PC11  RES  ENC28J60 */

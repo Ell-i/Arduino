@@ -8,7 +8,8 @@ extern "C" {
 extern void Peripheral_Init(void);
 
 #ifndef assert
-#define assert(x) do { while (!x) { GPIOC->ODR ^= GPIO_ODR_11; for (volatile int i = 0; i < 100; i++); } } while (0)
+#define assert(x) \
+    do { while (!(x)) { GPIOC->ODR ^= GPIO_ODR_8; for (volatile int i = 0; i < 100; i++); } } while (0)
 #endif
 
 /*
@@ -80,6 +81,10 @@ extern int sysTickHook(void);
 void SysTick_Handler(void);
 void SysTick_Handler(void)
 {
+#if 1
+    GPIOC->ODR ^= GPIO_ODR_8;
+#endif
+
     if (sysTickHook())
         return;
 

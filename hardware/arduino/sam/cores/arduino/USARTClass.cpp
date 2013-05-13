@@ -23,6 +23,8 @@
 
 // Constructors ////////////////////////////////////////////////////////////////
 
+extern "C" { volatile int __init_magic = 0; }
+
 USARTClass::USARTClass( Usart* pUsart, IRQn_Type dwIrq, uint32_t dwId, RingBuffer* pRx_buffer )
 {
   _rx_buffer = pRx_buffer ;
@@ -30,6 +32,8 @@ USARTClass::USARTClass( Usart* pUsart, IRQn_Type dwIrq, uint32_t dwId, RingBuffe
   _pUsart=pUsart ;
   _dwIrq=dwIrq ;
   _dwId=dwId ;
+
+  __init_magic = 1;
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
