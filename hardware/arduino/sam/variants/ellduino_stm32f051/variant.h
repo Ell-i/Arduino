@@ -12,19 +12,19 @@
 /*
  * Analog pins -- compatible with mega and due
  */
-static const uint8_t A0   = 54;
-static const uint8_t A1   = 55;
-static const uint8_t A2   = 56;
-static const uint8_t A3   = 57;
-static const uint8_t A4   = 58;
-static const uint8_t A5   = 59;
-static const uint8_t A6   = 60;
-static const uint8_t A7   = 61;
-static const uint8_t A8   = 62;
-static const uint8_t A9   = 63;
-static const uint8_t A10  = 64;
-static const uint8_t A11  = 65;
-static const uint8_t DAC0 = 66;
+static const uint8_t A0  = 22;
+static const uint8_t A1  = 23;
+static const uint8_t A2  = 24;
+static const uint8_t A3  = 25;
+static const uint8_t A4  = 26;
+static const uint8_t A5  = 27;
+static const uint8_t A6  = 28;
+static const uint8_t A7  = 29;
+static const uint8_t A8  = 30;
+static const uint8_t A9  = 31;
+static const uint8_t A10 = 32;
+static const uint8_t A11 = 33;
+static const uint8_t DAC0 = 34;
 #define ADC_RESOLUTION		12
 #define NUM_ANALOG_INPUTS       11
 #if 0

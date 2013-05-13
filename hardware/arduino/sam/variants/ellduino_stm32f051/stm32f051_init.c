@@ -691,7 +691,7 @@ const struct device_register_init_static_32bit adc_init[] = {
         | ! ADC_CR_ADSTP       /* 0: Do not attempt to stop ADC conversion  */
         | ! ADC_CR_ADSTART     /* 0: Do not attempt to start ADC conversion  */
         | ! ADC_CR_ADDIS       /* 0: Do not attempt to disable ADC */
-        |   ADC_CR_ADEN        /* 0: Enable ADC */
+        |   ADC_CR_ADEN        /* 1: Still enable ADC, yet */
         ),
     D32(ADC1, CFGR1,
         0
@@ -701,7 +701,7 @@ const struct device_register_init_static_32bit adc_init[] = {
         | ! ADC_CFGR1_DISCEN   /* 0: Discontinuous mode disabled */
         | ! ADC_CFGR1_AUTOFF   /* 0: Auto-off mode disabled */
         | ! ADC_CFGR1_WAIT     /* 0: Wait conversion mode off */
-        |   ADC_CFGR1_CONT     /* 1: Continuous conversion mode */
+        | ! ADC_CFGR1_CONT     /* 0: Single shot mode */
         |   ADC_CFGR1_OVRMOD   /* 1: ADC_DR is overwritten with latest value */
         | ! ADC_CFGR1_EXTEN    /* 00: Conversion started by software */
         | ! ADC_CFGR1_EXTSEL   /* 000: Default value */
@@ -726,9 +726,9 @@ const struct device_register_init_static_32bit adc_init[] = {
         | ! ADC_CHSELR_CHSEL13 /* 0: Channel 13 not selected for conversion */
         | ! ADC_CHSELR_CHSEL12 /* 0: Channel 12 not selected for conversion */
         | ! ADC_CHSELR_CHSEL11 /* 0: Channel 11 not selected for conversion */
-        |   ADC_CHSELR_CHSEL10 /* 1: Channel 10 selected for conversion Blue  */
-        |   ADC_CHSELR_CHSEL9  /* 1: Channel  9 selected for conversion Green */
-        |   ADC_CHSELR_CHSEL8  /* 1: Channel  8 selected for conversion Red   */
+        | ! ADC_CHSELR_CHSEL10 /* 1: Channel 10 not selected for conversion */
+        | ! ADC_CHSELR_CHSEL9  /* 1: Channel  9 not selected for conversion */
+        | ! ADC_CHSELR_CHSEL8  /* 1: Channel  8 not selected for conversion */
         | ! ADC_CHSELR_CHSEL7  /* 0: Channel  7 not selected for conversion */
         | ! ADC_CHSELR_CHSEL6  /* 0: Channel  6 not selected for conversion */
         | ! ADC_CHSELR_CHSEL5  /* 0: Channel  5 not selected for conversion */
@@ -755,8 +755,8 @@ const struct device_register_init_static_32bit adc_init2[] = {
 const device_register_init_descriptor_t dri_tables[] = {
     DRI_DESCRIPTOR_MASKED_32BIT(RCC,   reset_and_clock_control),
     DRI_DESCRIPTOR_MASKED_32BIT(NVIC,  nvic),
-#if 0
     DRI_DESCRIPTOR_STATIC_32BIT(ADC1,  adc_start_calibrate),
+#if 0
     DRI_DESCRIPTOR_STATIC_16BIT(SPI2,  spi_enc28j60),
 #endif
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOA, general_purpose_io_a),
@@ -774,11 +774,9 @@ const device_register_init_descriptor_t dri_tables[] = {
     DRI_DESCRIPTOR_STATIC_32BIT(USART1, usart_standby),
     DRI_DESCRIPTOR_STATIC_32BIT(USART2, usart_standby),
 #endif
-#if 0
     DRI_DESCRIPTOR_WAITED_32BIT(ADC1,  adc_wait_for_calibrate),
     DRI_DESCRIPTOR_STATIC_32BIT(ADC1,  adc_init),
     DRI_DESCRIPTOR_STATIC_32BIT(ADC,   adc_init2),
-#endif
 };
 
 /*
