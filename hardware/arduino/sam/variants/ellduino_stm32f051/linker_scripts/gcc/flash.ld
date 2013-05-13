@@ -35,7 +35,7 @@ SECTIONS
     /* the program code is stored in the .text section, which goes to Flash */
     .text :
     {
-	    . = ALIGN(4);
+	. = ALIGN(4);
 
         *(.text)                   /* normal code */
         *(.text.*)                 /* -ffunction-sections code */
@@ -44,8 +44,25 @@ SECTIONS
         *(.glue_7)                 /* TBD - needed ? */
         *(.glue_7t)                /* TBD - needed ? */
 
-	/* Necessary KEEP sections (see http://sourceware.org/ml/newlib/2005/msg00255.html) */
+        /* Support C constructors, and C destructors in both user code
+           and the C library. This also provides support for C++ code. */
 	KEEP (*(.init))
+        . = ALIGN(4);
+        __preinit_array_start = .;
+        KEEP (*(.preinit_array))
+        __preinit_array_end = .;
+
+        . = ALIGN(4);
+        __init_array_start = .;
+        KEEP (*(SORT(.init_array.*)))
+        KEEP (*(.init_array))
+        __init_array_end = .;
+
+        . = ALIGN(0x4);
+        KEEP (*crtbegin.o(.ctors))
+        KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))
+        KEEP (*(SORT(.ctors.*)))
+        KEEP (*crtend.o(.ctors))
 	KEEP (*(.fini))
 
 	    . = ALIGN(4);
