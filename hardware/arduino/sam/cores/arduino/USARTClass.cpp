@@ -78,8 +78,14 @@ void USARTClass::begin( const uint32_t dwBaudRate )
   /* Set the baud rate -- use 16 bit oversampling */
   _pUsart->BRR  = SystemCoreClock / dwBaudRate;
 
-  /* Enable the USART */
-  _pUsart->CR1 |= USART_CR1_UE;
+#if 1
+  if (_pUsart == USART1) {
+      GPIOC->ODR   |=  GPIO_ODR_6;
+  }
+#endif
+
+  /* Enable the transmitter and the USART */
+  _pUsart->CR1 |= USART_CR1_TE | USART_CR1_UE;
 #endif
 }
 
@@ -142,6 +148,17 @@ size_t USARTClass::write( const uint8_t uc_data )
   // Send character
   _pUsart->US_THR = uc_data ;
 #endif
+#if defined(__STM32F051__)
+#endif
+  /* Send the character */
+  _pUsart->TDR = uc_data;
+
+  /* Wait until the data has been consumed */
+  while ((_pUsart->ISR & USART_ISR_TXE) == 0) {
+      GPIOC->ODR ^= GPIO_ODR_9;
+      /* XXX yield() */;
+  }
+
   return 1;
 }
 
