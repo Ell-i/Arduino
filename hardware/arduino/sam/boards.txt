@@ -44,7 +44,7 @@ ellduino_stm32f051.upload.maximum_size=65535
 ellduino_stm32f051.upload.wait_for_upload_port=false
 ellduino_stm32f051.upload.native_usb=false
 ellduino_stm32f051.build.mcu=cortex-m0
-ellduino_stm32f051.build.f_cpu=84000000LXXX
+ellduino_stm32f051.build.f_cpu=48000000L
 ellduino_stm32f051.build.board=ELLI_STM32F051
 ellduino_stm32f051.build.core=arduino
 ellduino_stm32f051.build.extra_flags=-mthumb -D__STM32F051__ -std=gnu99
@@ -60,7 +60,7 @@ discovery_stm32f051.upload.maximum_size=65535
 discovery_stm32f051.upload.wait_for_upload_port=false
 discovery_stm32f051.upload.native_usb=true
 discovery_stm32f051.build.mcu=cortex-m0
-discovery_stm32f051.build.f_cpu=84000000LXXX
+discovery_stm32f051.build.f_cpu=48000000L
 discovery_stm32f051.build.board=ELLI_STM32F051
 discovery_stm32f051.build.core=arduino
 discovery_stm32f051.build.extra_flags=-mthumb -D__STM32F051__ -std=gnu99

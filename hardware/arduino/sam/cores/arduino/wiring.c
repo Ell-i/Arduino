@@ -39,7 +39,9 @@ uint32_t micros( void )
     uint32_t count, count2;
 
     ticks2  = SysTick->VAL;
+#if 0
     pend2   = !!((SCB->ICSR & SCB_ICSR_PENDSTSET_Msk)||((SCB->SHCSR & SCB_SHCSR_SYSTICKACT_Msk)))  ;
+#endif
     count2  = GetTickCount();
 
     do {
@@ -47,7 +49,9 @@ uint32_t micros( void )
         pend=pend2;
         count=count2;
         ticks2  = SysTick->VAL;
+#if 0
         pend2   = !!((SCB->ICSR & SCB_ICSR_PENDSTSET_Msk)||((SCB->SHCSR & SCB_SHCSR_SYSTICKACT_Msk)))  ;
+#endif
         count2  = GetTickCount();
     } while ((pend != pend2) || (count != count2) || (ticks < ticks2));
 
