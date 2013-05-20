@@ -27,7 +27,7 @@ CMSIS_PATH   := ../../arduino/sam/system/CMSIS/CMSIS
 
 VPATH          :=   $(VARIANT_PATH)   $(CORE_PATH)   $(SYSTEM_PATH)/source
 INCLUDE_CFLAGS := -I$(VARIANT_PATH) -I$(CORE_PATH) -I$(SYSTEM_PATH)/include \
-		  -I$(CMSIS_PATH)/Include
+	          -I$(SYSTEM_PATH)  -I$(CMSIS_PATH)/Include
 
 OBJDIR         := $(BUILD_PATH)
 
