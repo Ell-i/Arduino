@@ -1,79 +1,73 @@
 /*
-  Copyright (c) 2011 Arduino.  All right reserved.
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-  See the GNU Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  Copyright (c) 2013 Ell-i.  All right reserved.
 */
 
-#ifndef _WIRING_ANALOG_
-#define _WIRING_ANALOG_
+#ifndef ELLDUINO_WIRING_ANALOG_H
+#define ELLDUINO_WIRING_ANALOG_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
- * \brief SAM3 products have only one reference for ADC
- */
-typedef enum _eAnalogReference
-{
-  AR_DEFAULT,
-} eAnalogReference ;
+inline
+void analogWrite(uint32_t pin, uint32_t value) {
+    const uint32_t pin_number = stm32_pinDescription[pin].pin_number;
+    const stm32_pinDescription_t * const pinp = &stm32_pinDescription[pin];
 
-/*
- * \brief Configures the reference voltage used for analog input (i.e. the value used as the top of the input range).
- * This function is kept only for compatibility with existing AVR based API.
- *
- * \param ulMmode Should be set to AR_DEFAULT.
- */
-extern void analogReference( eAnalogReference ulMode ) ;
+#if 0
+    const uint32_t af_mask  = ~(0xf)              << (pinp->pin_mask);
+    const uint32_t af_value =  (pinp->pin_pwm_af) << (pinp->pin_mask);
 
-/*
- * \brief Writes an analog value (PWM wave) to a pin.
- *
- * \param ulPin
- * \param ulValue
- */
-//extern void analogWrite( uint32_t ulPin, uint32_t ulValue ) ;
+    /* XXX: Should be selected by default. */
+    /* Select GPIO alternate function.  Would temporarily change values, hence the check. */
+    if ((*(pinp->pin_port_afr) & af_mask) != af_value) {
+        *(pinp->pin_port_afr) &= af_mask;
+        *(pinp->pin_port_afr) |= af_value;
+    }
+#endif
 
-/*
- * \brief Reads the value from the specified analog pin.
- *
- * \param ulPin
- *
- * \return Read value from selected pin, if no error.
- */
-//extern uint32_t analogRead( uint32_t ulPin ) ;
+    /* Place the GPIO in the Alternate Function mode.  Idempotent. */
+    *(pinp->pin_port_moder) &= ~(GPIO_MODER_MODER0_0 << (pin_number * 2));
+    *(pinp->pin_port_moder) |=  (GPIO_MODER_MODER0_1 << (pin_number * 2));
 
-/*
- * \brief Set the resolution of analogRead return values. Default is 10 bits (range from 0 to 1023).
- *
- * \param res
- */
-extern void analogReadResolution(int res);
+    /* Channel counter value */
+    *(pinp->pin_pwm_ccr)   = value;
+}
 
-/*
- * \brief Set the resolution of analogWrite parameters. Default is 8 bits (range from 0 to 255).
- *
- * \param res
- */
-extern void analogWriteResolution(int res);
+inline
+uint32_t analogRead(uint32_t pin) {
+    const uint32_t pin_number = stm32_pinDescription[pin].pin_number;
+    const stm32_pinDescription_t * const pinp = &stm32_pinDescription[pin];
 
-extern void analogOutputInit( void ) ;
+    /* Configure the I/O pin to analog mode */
+    *(pinp->pin_port_moder) |=  (GPIO_MODER_MODER0 << (pin_number * 2));
+
+    /* Configure the selection channel */
+    ADC1->CHSELR = 1 << pinp->pin_adc_channel;
+
+    /* Wait for ADC to be ready */
+    while (!(ADC1->ISR & ADC_ISR_ADRDY)) {
+      GPIOC->ODR ^= GPIO_ODR_9;
+      GPIOC->ODR ^= GPIO_ODR_7;
+      /* XXX yield() */;
+    }
+
+    /* Start conversion */
+    ADC1->CR |= ADC_CR_ADSTART;
+
+    /* Wait for the ADC to complete conversion */
+    while (!(ADC1->ISR & ADC_ISR_EOC)) {
+      GPIOC->ODR ^= GPIO_ODR_9;
+      GPIOC->ODR ^= GPIO_ODR_6;
+      /* XXX yield() */;
+    }
+
+    /* Return the data */
+    return ADC1->DR;
+}
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _WIRING_ANALOG_ */
+#endif /* ELLDUINO_WIRING_ANALOG_H */
