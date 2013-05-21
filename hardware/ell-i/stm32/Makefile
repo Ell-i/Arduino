@@ -57,7 +57,7 @@ BASE_CFLAGS   := -g -Os -w \
 
 CFLAGS   := $(BASE_CFLAGS) -std=gnu99
 CXXFLAGS := $(BASE_CFLAGS) \
-	-fno-rtti -fno-exceptions -std=c++0x
+	-fno-rtti -fno-exceptions -std=gnu++0x
 
 #
 # Dynamic source file list
@@ -96,4 +96,4 @@ $(TARGET): $(OBJS)
 
 clean:
 	$(RM) $(TARGET) $(OBJS)
-	rmdir $(BUILD_PATH)
+	@if [ -d $(BUILD_PATH) ]; then echo rmdir $(BUILD_PATH); rmdir $(BUILD_PATH); fi

@@ -1,42 +1,53 @@
 /*
-  Copyright (c) 2011 Arduino.  All right reserved.
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-  See the GNU Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  Copyright (c) 2013 Ell-i.  All right reserved.
 */
 
-#ifndef _WIRING_SHIFT_
-#define _WIRING_SHIFT_
+#ifndef ELLDUINO_WIRING_SHIFT_H
+#define ELLDUINO_WIRING_SHIFT_H
 
 #ifdef __cplusplus
- extern "C" {
-#endif
+extern "C"{
 
-/*
- * \brief
- */
-extern uint32_t shiftIn( uint32_t ulDataPin, uint32_t ulClockPin, uint32_t ulBitOrder ) ;
+enum BitOrder {
+    LSBFIRST = 0,
+    MSBFIRST = 1,
+};
 
+static inline
+void shiftOut(const pin_t dataPin, const pin_t clockPin, const enum BitOrder bitOrder,
+              uint32_t data, uint8_t count = 8, const uint32_t ms = 0) {
+    const uint32_t mask = bitOrder == MSBFIRST? 1 << (count - 1) : 1;
 
-/*
- * \brief
- */
-extern void shiftOut( uint32_t ulDataPin, uint32_t ulClockPin, uint32_t ulBitOrder, uint32_t ulVal ) ;
-
-
-#ifdef __cplusplus
+    while (count-- > 0) {
+        digitalWrite(dataPin,  data & mask);
+        digitalWrite(clockPin, HIGH);
+        data = (bitOrder == MSBFIRST? data << 1: data >> 1);
+        digitalWrite(clockPin, LOW);
+        delay(ms);
+    }
 }
+
+static inline
+uint32_t shiftIn(const pin_t dataPin, const pin_t clockPin, const enum BitOrder bitOrder,
+                 uint8_t count = 8, const uint32_t ms = 0) {
+    uint32_t data = 0;
+    uint32_t mask = bitOrder == MSBFIRST? 1 << (count - 1) : 1;
+
+    while (count-- > 0) {
+        digitalWrite(clockPin, HIGH);
+        delay(ms);
+        if (digitalRead(dataPin))
+            data |= mask;
+        digitalWrite(clockPin, LOW);
+        /* 
+         * XXX: This is delay long enough for the LOW time for all chips?  
+         * Should we have delay here too?
+         */
+        mask = (bitOrder == MSBFIRST? mask >> 1: mask << 1);
+    }
+}
+
+} // extern "C"
 #endif
 
-#endif /* _WIRING_SHIFT_ */
+#endif /* ELLDUINO_WIRING_SHIFT_H */

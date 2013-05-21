@@ -32,6 +32,23 @@
 
 #include "binary.h"
 
+/*
+ * From http://stackoverflow.com/questions/1598773/\
+ * is-there-a-standard-function-in-c-that-would-return-the-length-of-an-array:
+ *
+ * In this version if a pointer is mistakenly passed as the argument,
+ * the compiler will complain in some cases - specifically if the
+ * pointer's size isn't evenly divisible by the size of the object the
+ * pointer points to. In that situation a divide-by-zero will cause
+ * the compiler to error out. Actually at least one compiler
+ * gives a warning instead of an error.
+ *
+ * That macro doesn't close the door on using it erroneously, but it
+ * comes close in straight C.
+ */
+
+#define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
 #ifdef __cplusplus
 extern "C"{
 #endif // __cplusplus
@@ -88,6 +105,8 @@ typedef void (*voidFuncPtr)( void ) ;
 #elif defined (  __GNUC__  ) /* GCC CS */
     #define WEAK __attribute__ ((weak))
 #endif
+
+typedef uint8_t pin_t;
 
 /* Definitions and types for pins */
 typedef enum _EAnalogChannel
@@ -186,7 +205,6 @@ extern const PinDescription g_APinDescription[] ;
 #include "WCharacter.h"
 #include "WString.h"
 #include "Tone.h"
-#include "WMath.h"
 #include "HardwareSerial.h"
 #include "wiring_pulse.h"
 
@@ -195,9 +213,10 @@ extern const PinDescription g_APinDescription[] ;
 // Include board variant
 #include "variant.h"
 
-#include "wiring.h"
+#include "wiring_time.h"
 #include "wiring_digital.h"
 #include "wiring_analog.h"
+#include "wiring_math.h"
 #include "wiring_shift.h"
 #include "WInterrupts.h"
 

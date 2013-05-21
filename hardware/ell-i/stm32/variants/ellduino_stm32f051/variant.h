@@ -2,7 +2,11 @@
   Copyright (c) 2013 Ell-i.  All right reserved.
 */
 
-#include "Arduino.h"
+#ifndef ELLDUINO_VARIANT_H
+#define ELLDUINO_VARIANT_H
+
+#define DEBUG 1
+
 #ifdef __cplusplus
 #include "USARTClass.h"
 #endif
@@ -20,6 +24,7 @@
     __FIELDINIT(pin_port_bsrr)    &((GPIO ## port)->BSRR),     \
     __FIELDINIT(pin_port_brr)     &((GPIO ## port)->BRR),      \
     __FIELDINIT(pin_port_input)   &((GPIO ## port)->IDR),      \
+    __FIELDINIT(pin_pwm_timer)    TIM ## timer,            \
     __FIELDINIT(pin_pwm_ccr)      &((TIM ## timer)->CCR ## channel), \
     __FIELDINIT(pin_mask)          GPIO_ODR_ ## pin,            \
     __FIELDINIT(pin_number)       pin, \
@@ -93,6 +98,14 @@ static const stm32_pinDescription_t stm32_pinDescription[] = {
 #undef __FIELDINIT
 
 /*
+ * Timers
+ */
+
+static TIM_TypeDef *const stm32_arduino_pwm_timers[] = {
+    TIM1, TIM2, TIM3, TIM14, TIM15
+};
+
+/*
  * Analog pins -- compatible with mega and due
  */
 static const uint8_t A0  = 22;
@@ -127,3 +140,5 @@ extern USARTClass Serial1;
 };
 
 #endif
+
+#endif /* ELLDUINO_VARIANT_H */

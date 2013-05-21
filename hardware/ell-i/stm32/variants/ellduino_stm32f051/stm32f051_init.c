@@ -14,6 +14,7 @@
 #include <assert.h>
 
 #include "init.h"
+#include "Arduino.h"
 
 #define D16(d, r, v)    DEVICE_REGISTER_INIT_STRUCT_VALUE16((d), r, (v))
 #define D32(d, r, v)    DEVICE_REGISTER_INIT_STRUCT_VALUE32((d), r, (v))
@@ -509,8 +510,8 @@ const struct device_register_init_static_16bit arduino_pwm_output[] = {
         | ! TIM_BDTR_DTG        /* 0   = No dead time */
         ),
 
-    D16(TIM1, PSC,   382),      /* 48MHz / (382+1) = approx 125 kHz (125 326 Hz) */
-    D16(TIM1, ARR,   255),      /* 125 kHz / 256 = 490 Hz */
+    D16(TIM1, PSC,   383),      /* 48MHz / (383+1) = 125 kHz (125 000 Hz) */
+    D16(TIM1, ARR,   255),      /* 125 kHz / 256 = 488 Hz */
 #ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
     D16(TIM1, CCR1,  0),        /* Boot with 0% duty */
     D16(TIM1, CCR2,  0),        /* Boot with 0% duty */
@@ -706,7 +707,7 @@ const struct device_register_init_static_32bit adc_init[] = {
         | ! ADC_CFGR1_EXTEN    /* 00: Conversion started by software */
         | ! ADC_CFGR1_EXTSEL   /* 000: Default value */
         | ! ADC_CFGR1_ALIGN    /* 0: Right alignment */
-        | ! ADC_CFGR1_RES      /* 00: 12-bits resolution */
+        |   ADC_CFGR1_RES_0    /* 01: 10-bits resolution, Arduino default */
         | ! ADC_CFGR1_SCANDIR  /* 0: Upward scan */
         | ! ADC_CFGR1_DMACFG   /* 0: N/A, DMA not used */
         | ! ADC_CFGR1_DMAEN    /* 0: DMA disabled */
@@ -764,12 +765,12 @@ const device_register_init_descriptor_t dri_tables[] = {
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOC, general_purpose_io_c),
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOD, general_purpose_io_d),
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOF, general_purpose_io_f),
-
-    DRI_DESCRIPTOR_STATIC_16BIT(TIM1, arduino_pwm_output),
-    DRI_DESCRIPTOR_STATIC_16BIT(TIM2, arduino_pwm_output),
-    DRI_DESCRIPTOR_STATIC_16BIT(TIM3, arduino_pwm_output),
+    DRI_DESCRIPTOR_STATIC_16BIT(TIM1,  arduino_pwm_output),
+    DRI_DESCRIPTOR_STATIC_16BIT(TIM2,  arduino_pwm_output),
+    DRI_DESCRIPTOR_STATIC_16BIT(TIM3,  arduino_pwm_output),
     DRI_DESCRIPTOR_STATIC_16BIT(TIM14, arduino_pwm_output),
     DRI_DESCRIPTOR_STATIC_16BIT(TIM15, arduino_pwm_output),
+
 #if 0
     DRI_DESCRIPTOR_STATIC_32BIT(USART1, usart_standby),
     DRI_DESCRIPTOR_STATIC_32BIT(USART2, usart_standby),

@@ -65,23 +65,20 @@ void init( void ) {
     __enable_irq();
 }
 
-static volatile uint32_t tickCount;
-
-uint32_t GetTickCount(void) {
-    return tickCount;
-}
-
 /*
  * XXX: Why does not this come linked from cortex_handlers.c?
  */
-
 #include <Reset.h>
 
 extern int sysTickHook(void);
 void SysTick_Handler(void);
 void SysTick_Handler(void)
 {
-#if 1
+    // Increment the millisecond count first.
+    // Incrementing first avoids race conditions
+    millisecondCount++;
+
+#if DEBUG
     GPIOC->ODR ^= GPIO_ODR_8;
 #endif
 
@@ -90,8 +87,6 @@ void SysTick_Handler(void)
 
     tickReset();
 
-    // Increment tick count each ms
-    tickCount++;
 }
 
 // ----------------------------------------------------------------------------

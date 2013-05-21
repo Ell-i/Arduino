@@ -32,6 +32,8 @@ extern void SysTick_Handler( void )
 
 extern volatile int __init_magic;
 
+extern void init(void);
+
 /*
  * \brief Main entry point of Arduino application
  */

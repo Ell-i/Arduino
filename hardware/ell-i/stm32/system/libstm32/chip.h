@@ -14,17 +14,18 @@
 
 typedef int Pio, EPioType;
 
-/* wiring_digital.c */
+/* variant.h */
 
 typedef struct stm32_pinDescription {
-    __IO uint32_t *pin_port_moder;
-    __IO uint32_t *pin_port_bsrr;
-    __IO uint16_t *pin_port_brr;
-    __IO uint16_t *pin_port_input;
-    __IO uint32_t *pin_pwm_ccr; /* Must be 32 bit pointer due to Timer 2 */
-    uint16_t pin_mask;
-    uint8_t pin_number;
-    uint8_t pin_adc_channel;
+    __IO uint32_t *const pin_port_moder; /* GPIO mode register */
+    __IO uint32_t *const pin_port_bsrr;  /* GPIO bit set/reset register */
+    __IO uint16_t *const pin_port_brr;   /* GPIO bit reset register */
+    __IO uint16_t *const pin_port_input; /* GPIO input register */
+    TIM_TypeDef   *const pin_pwm_timer;  /* PWM Timer */
+    __IO uint32_t *const pin_pwm_ccr;    /* PWM Timer counter; must be 32 bit pointer due to Timer 2 */
+    const uint16_t pin_mask;
+    const uint8_t  pin_number;
+    const uint8_t  pin_adc_channel;
 } stm32_pinDescription_t;
 
 /* USARTClass.h */
