@@ -40,23 +40,28 @@ RCC_GetHCLKFreq(void) {
  * End of STM derived work
  */
 
-void init( void ) {
+void init(void) {
+#if DEBUG
+    /* Start GPIO C early, and make 8, 9, 10 and 11 outputs */
+    RCC->AHBENR  |= RCC_AHBENR_GPIOCEN;
+    GPIOC->MODER |= GPIO_MODER_MODER6_0 | GPIO_MODER_MODER7_0 | GPIO_MODER_MODER8_0 | GPIO_MODER_MODER9_0;
+    GPIOC->ODR   |= GPIO_ODR_8;
+#endif
     /*
       In STM32F, SystemInit and __libc_init_array are called from the Reset_Handler,
       before main() gets called, and there is no need to call them again from here.
     */
 
-
     /* SysTick end of count event each 1ms */
     //SysTick_Config(SystemCoreClock / 1000); /* CMSIS */
-#if 1
+#if DEBUG
     GPIOC->ODR |= GPIO_ODR_9;
 #endif
     SysTick_Config(RCC_GetHCLKFreq() / 1000); /* CMSIS */
 
     Peripheral_Init();
 
-#if 1
+#if DEBUG
     GPIOC->ODR &= ~GPIO_ODR_9;
 #endif
 
@@ -69,6 +74,8 @@ void init( void ) {
  * XXX: Why does not this come linked from cortex_handlers.c?
  */
 #include <Reset.h>
+
+extern "C" { volatile uint32_t millisecondCount; }
 
 extern int sysTickHook(void);
 void SysTick_Handler(void);
@@ -93,26 +100,24 @@ void SysTick_Handler(void)
 /*
  * USART objects
  */
-static RingBuffer rx_buffer;
 
-USARTClass Serial(USART1, USART1_IRQn /* Not used */, 0 /* Not used */, &rx_buffer);
+RingBuffer rx_buffer;
+RingBuffer rx_buffer1;
+
 void serialEvent() __attribute__((weak));
 void serialEvent() { }
 
 void USART1_IRQHandler(void);
 void USART1_IRQHandler(void) {
-  Serial.IrqHandler();
+    //Serial.IrqHandler();
 }
 
-static RingBuffer rx_buffer1;
-
-USARTClass Serial1(USART2, USART2_IRQn /* Not used */, 0 /* Not used */, &rx_buffer1);
 void serialEvent1() __attribute__((weak));
 void serialEvent1() { }
 
 void USART2_IRQHandler(void);
 void USART2_IRQHandler(void) {
-  Serial1.IrqHandler();
+    //Serial1.IrqHandler();
 }
 
 #ifdef __cplusplus

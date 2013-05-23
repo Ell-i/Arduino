@@ -60,7 +60,7 @@ void delayMicroseconds(uint32_t us) {
     if (cycles4 < 250) {
         asm volatile(
             "L_%=_delayMicroseconds:"       "\n\t"
-            "subs   %0, #1"                 "\n\t"
+            "sub    %0, #1"                 "\n\t"
             "bge    L_%=_delayMicroseconds" "\n"
             : /* no outputs */ : "r" (cycles4) 
             );

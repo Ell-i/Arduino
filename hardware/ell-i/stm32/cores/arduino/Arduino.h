@@ -21,7 +21,6 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
 
 // some libraries and sketches depend on this
@@ -202,9 +201,9 @@ extern const PinDescription g_APinDescription[] ;
 #ifdef __cplusplus
 } // extern "C"
 
+#include "RingBuffer.h"
 #include "WCharacter.h"
 #include "WString.h"
-#include "Tone.h"
 #include "HardwareSerial.h"
 #include "wiring_pulse.h"
 
@@ -216,6 +215,7 @@ extern const PinDescription g_APinDescription[] ;
 #include "wiring_time.h"
 #include "wiring_digital.h"
 #include "wiring_analog.h"
+#include "wiring_tone.h"
 #include "wiring_math.h"
 #include "wiring_shift.h"
 #include "WInterrupts.h"

@@ -22,6 +22,9 @@ static inline long abs(long x) { return ((x)>0?(x):-(x)); }
 static inline long constrain(long value, long min, long ma) {
     return ((value)<(min)?(min):((value)>(ma)?(ma):(value)));
 }
+static inline int   map(int   value, int   low1, int   high1, int   low2, int   high2) {
+    return ((value - low1) * ((high2 - low2) / (high1 - low1))) + low2;
+}
 static inline long  map(long  value, long  low1, long  high1, long  low2, long  high2) {
     return ((value - low1) * ((high2 - low2) / (high1 - low1))) + low2;
 }

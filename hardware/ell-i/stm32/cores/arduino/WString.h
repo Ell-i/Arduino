@@ -24,7 +24,6 @@
 #ifdef __cplusplus
 
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 
 // When compiling programs with this class, the following gcc parameters

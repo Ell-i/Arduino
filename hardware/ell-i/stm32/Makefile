@@ -48,16 +48,15 @@ VARIANT_CFLAGS := -mcpu=cortex-m0 -mthumb -DF_CPU=48000000L
 
 BASE_CFLAGS   := -g -Os -w \
 	-ffunction-sections -fdata-sections \
-	-nostdlib \
 	--param max-inline-insns-single=500 \
 	-Dprintf=iprintf \
-	-DARDUINO \
+	-DARDUINO=153 -DARDUINO_ELLI_STM32F051 -DARDUINO_ARCH_STM32 \
 	$(VARIANT_CFLAGS) \
 	$(INCLUDE_CFLAGS)
 
 CFLAGS   := $(BASE_CFLAGS) -std=gnu99
 CXXFLAGS := $(BASE_CFLAGS) \
-	-fno-rtti -fno-exceptions -std=gnu++0x
+	-fno-rtti -fno-exceptions -std=gnu99 # -std=gnu++0x
 
 #
 # Dynamic source file list
@@ -97,3 +96,18 @@ $(TARGET): $(OBJS)
 clean:
 	$(RM) $(TARGET) $(OBJS)
 	@if [ -d $(BUILD_PATH) ]; then echo rmdir $(BUILD_PATH); rmdir $(BUILD_PATH); fi
+
+#
+# For testing
+#
+
+LDFLAGS  := \
+	-Tvariants/ellduino_stm32f051/linker_scripts/gcc/flash.ld \
+	-lm -lgcc -mthumb \
+	-Wl,--check-sections -Wl,--gc-sections \
+	-Wl,--entry=Reset_Handler \
+	-Wl,--warn-common -Wl,--warn-section-align \
+	-Wl,--start-group ${OBJS}  -Wl,--end-group
+
+# -Wl,--unresolved-symbols=report-all \
+# -Wl,--warn-unresolved-symbols \

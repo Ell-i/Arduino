@@ -13,7 +13,7 @@ extern "C"{
  *      What if there is a conflict with the output PWM function?
  */
 
-#define pulseIn(...) error: pulseIn not supported yet.
+#define pulseIn(...) error_pulseIn_not_supported_yet.
 
 } // extern "C"
 #endif

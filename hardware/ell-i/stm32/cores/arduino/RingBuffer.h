@@ -1,42 +1,79 @@
 /*
-  Copyright (c) 2011 Arduino.  All right reserved.
 
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-  See the GNU Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  Copyright (c) 2013 Ell-i.  All rights reserved.
 */
 
-#ifndef _RING_BUFFER_
-#define _RING_BUFFER_
+#ifndef ELLDUINO_RINGBUFFER_H
+#define ELLDUINO_RINGBUFFER_H
 
-#include <stdint.h>
+#ifndef RINGBUFFER_SIZE
+#define RINGBUFFER_SIZE 64
+#endif
 
-// Define constants and variables for buffering incoming serial data.  We're
-// using a ring buffer (I think), in which head is the index of the location
-// to which to write the next incoming character and tail is the index of the
-// location from which to read.
-#define SERIAL_BUFFER_SIZE 64
+class RingBuffer {
+private:
+    uint8_t buffer[RINGBUFFER_SIZE];
+    uint8_t head;
+    uint8_t tail;
 
-class RingBuffer
-{
-  public:
-    uint8_t _aucBuffer[SERIAL_BUFFER_SIZE] ;
-    int _iHead ;
-    int _iTail ;
+    int nextIndex(int index) const {
+        return (index + 1) % RINGBUFFER_SIZE;
+    }
 
-  public:
-    RingBuffer( void ) ;
-    void store_char( uint8_t c ) ;
-} ;
+    int prevIndex(int index) const {
+        return (RINGBUFFER_SIZE + index - 1) % RINGBUFFER_SIZE;
+    }
 
-#endif /* _RING_BUFFER_ */
+public:
+    /* XXX constexpr */ RingBuffer() : head(0), tail(0) {}
+
+    void flush(void) {
+        head = tail = 0;
+    }
+
+    bool empty() const {
+        return head == tail;
+    }
+
+    bool full() const {
+        return nextIndex(head) == tail;
+    }
+
+    int peek() const {
+        return empty()? -1: buffer[tail];
+    }
+
+    void put(uint8_t c) {
+        if (!full()) {
+            buffer[head] = c;
+            head = nextIndex(head);
+        }
+    }
+
+    int get() {
+        int c = peek();
+        if (!empty()) {
+            tail = nextIndex(tail);
+            return c;
+        }
+        return -1;
+    }
+
+    int push(uint8_t c) {
+        /*
+         * We must protect against interrupts here
+         * in order to avoid a race condition with put,
+         * which may be called from an interrupt routine.
+         */
+        noInterrupts();
+        tail = prevIndex(tail);
+        if (tail == head) {
+            /* OOPS.  The buffer was full.  Junk the newest. */
+            head = prevIndex(head);
+        }
+        buffer[tail] = c;
+        interrupts();
+    }
+};
+
+#endif /* ELLDUINO_RINGBUFFER_H */
