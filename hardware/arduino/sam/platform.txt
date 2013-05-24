@@ -31,15 +31,16 @@ compiler.define=-DARDUINO=
 build.extra_flags=
 
 
+compiler.libsam.c.flags="-I{build.system.path}/libsam" "-I{build.system.path}/CMSIS/CMSIS/Include/" "-I{build.system.path}/CMSIS/Device/ATMEL/"
 
 # SAM3 compile patterns
 # ---------------------
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {build.extra_flags} {build.library.c.flags} {includes} "{source_file}" -o "{object_file}"
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {build.extra_flags} {compiler.libsam.c.flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c++ files
-recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {build.extra_flags} {build.library.c.flags} {includes} "{source_file}" -o "{object_file}"
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {build.extra_flags} {compiler.libsam.c.flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Create archives
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{build.path}/{archive_file}" "{object_file}"
@@ -69,22 +70,3 @@ tools.bossac.upload.params.verbose=-i -d
 tools.bossac.upload.params.quiet=
 tools.bossac.upload.pattern="{path}/{cmd}" {upload.verbose} --port={serial.port.file} -U {upload.native_usb} -e -w -v -b "{build.path}/{build.project_name}.bin" -R
 
-# STM32F Uploader tools
-# ---------------------
-
-tools.stm32flash.cmd=stm32flash
-tools.stm32flash.cmd.windows=stm32flash.exe
-tools.stm32flash.path={runtime.ide.path}/hardware/tools
-
-tools.stm32flash.upload.params.verbose=
-tools.stm32flash.upload.params.quiet=
-tools.stm32flash.upload.pattern="{path}/{cmd}" {upload.verbose} -w {build.path}/{build.project_name}.bin -v -g0 /dev/{serial.port.file}
-tools.stm32flash.upload.pattern.windows="{path}/{cmd}" {upload.verbose} -w {build.path}/{build.project_name}.bin -v -g0 {serial.port.file}
-
-tools.stflash.cmd=st-flash
-tools.stflash.cmd.windows=stflash.exe
-tools.stflash.path={runtime.ide.path}/hardware/tools
-tools.stflash.upload.params.verbose=
-tools.stflash.upload.params.quiet=
-tools.stflash.upload.pattern="{path}/{cmd}" write {build.path}/{build.project_name}.bin 0x08000000
-tools.stflash.upload.pattern.windows="{path}/{cmd}" write {build.path}/{build.project_name}.bin 0x08000000

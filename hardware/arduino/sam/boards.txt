@@ -11,7 +11,6 @@ arduino_due_x_dbg.build.f_cpu=84000000L
 arduino_due_x_dbg.build.board=SAM_DUE
 arduino_due_x_dbg.build.core=arduino
 arduino_due_x_dbg.build.extra_flags=-D__SAM3X8E__ -mthumb -DUSB_PID={build.pid} -DUSB_VID={build.vid} -DUSBCON
-arduino_due_x_dbg.build.library.c.flags="-I{build.system.path}/libsam" "-I{build.system.path}/CMSIS/CMSIS/Include/" "-I{build.system.path}/CMSIS/Device/ATMEL/"
 arduino_due_x_dbg.build.ldscript=linker_scripts/gcc/flash.ld
 arduino_due_x_dbg.build.variant=arduino_due_x
 arduino_due_x_dbg.build.variant_system_lib=libsam_sam3x8e_gcc_rel.a
@@ -30,7 +29,6 @@ arduino_due_x.build.f_cpu=84000000L
 arduino_due_x.build.board=SAM_DUE
 arduino_due_x.build.core=arduino
 arduino_due_x.build.extra_flags=-D__SAM3X8E__ -mthumb -DUSB_PID={build.pid} -DUSB_VID={build.vid} -DUSBCON
-arduino_due_x.build.library.c.flags="-I{build.system.path}/libsam" "-I{build.system.path}/CMSIS/CMSIS/Include/" "-I{build.system.path}/CMSIS/Device/ATMEL/"
 arduino_due_x.build.ldscript=linker_scripts/gcc/flash.ld
 arduino_due_x.build.variant=arduino_due_x
 arduino_due_x.build.variant_system_lib=libsam_sam3x8e_gcc_rel.a

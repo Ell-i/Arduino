@@ -30,40 +30,26 @@ extern void SysTick_Handler( void )
 }
 */
 
-extern volatile int __init_magic;
-
 /*
  * \brief Main entry point of Arduino application
  */
 int main( void )
 {
-#if 1
-    /* Start GPIO C early, and make 8, 9, 10 and 11 outputs */
-    RCC->AHBENR  |= RCC_AHBENR_GPIOCEN;
-    GPIOC->MODER |= GPIO_MODER_MODER6_0 | GPIO_MODER_MODER7_0 | GPIO_MODER_MODER8_0 | GPIO_MODER_MODER9_0;
-    GPIOC->ODR   |= GPIO_ODR_8;
-    if (__init_magic)
-        GPIOC->ODR |= GPIO_ODR_6;
-#endif
-    init();
-#if 1
-    GPIOC->ODR   |= GPIO_ODR_9;
-    delay(1000);
-    GPIOC->ODR   &= ~GPIO_ODR_9;
-    GPIOC->ODR   &= ~GPIO_ODR_6;
-#endif
+	init();
+
+	delay(1);
 
 #if defined(USBCON)
-    USBDevice.attach();
+	USBDevice.attach();
 #endif
 
-    setup();
-    GPIOC->ODR   |= GPIO_ODR_7;
+	setup();
 
-    for (;;) {
-        loop();
-        if (serialEventRun) serialEventRun();
-    }
+	for (;;)
+	{
+		loop();
+		if (serialEventRun) serialEventRun();
+	}
 
-    return 0;
+	return 0;
 }

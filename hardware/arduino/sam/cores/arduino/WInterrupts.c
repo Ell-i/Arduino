@@ -35,7 +35,6 @@ static void __initialize() {
 		callbacksPioD[i] = NULL;
 	}
 
-#if defined(__SAM3X8E__)
 	pmc_enable_periph_clk(ID_PIOA);
 	NVIC_DisableIRQ(PIOA_IRQn);
 	NVIC_ClearPendingIRQ(PIOA_IRQn);
@@ -59,7 +58,6 @@ static void __initialize() {
 	NVIC_ClearPendingIRQ(PIOD_IRQn);
 	NVIC_SetPriority(PIOD_IRQn, 0);
 	NVIC_EnableIRQ(PIOD_IRQn);
-#endif
 }
 
 
@@ -80,7 +78,6 @@ void attachInterrupt(uint32_t pin, void (*callback)(void), uint32_t mode)
 	for (t = mask; t>1; t>>=1, pos++)
 		;
 
-#if defined(__SAM3X8E__)
 	// Set callback function
 	if (pio == PIOA)
 		callbacksPioA[pos] = callback;
@@ -120,7 +117,6 @@ void attachInterrupt(uint32_t pin, void (*callback)(void), uint32_t mode)
 
 	// Enable interrupt
 	pio->PIO_IER = mask;
-#endif
 }
 
 void detachInterrupt(uint32_t pin)
@@ -129,10 +125,8 @@ void detachInterrupt(uint32_t pin)
 	Pio *pio = g_APinDescription[pin].pPort;
 	uint32_t mask = g_APinDescription[pin].ulPin;
 
-#if defined(__SAM3X8E__)
 	// Disable interrupt
 	pio->PIO_IDR = mask;
-#endif
 }
 
 #ifdef __cplusplus
@@ -140,7 +134,6 @@ extern "C" {
 #endif
 
 void PIOA_Handler(void) {
-#if defined(__SAM3X8E__)
 	uint32_t isr = PIOA->PIO_ISR;
 	uint32_t i;
 	for (i=0; i<32; i++, isr>>=1) {
@@ -149,11 +142,9 @@ void PIOA_Handler(void) {
 		if (callbacksPioA[i])
 			callbacksPioA[i]();
 	}
-#endif
 }
 
 void PIOB_Handler(void) {
-#if defined(__SAM3X8E__)
 	uint32_t isr = PIOB->PIO_ISR;
 	uint32_t i;
 	for (i=0; i<32; i++, isr>>=1) {
@@ -162,11 +153,9 @@ void PIOB_Handler(void) {
 		if (callbacksPioB[i])
 			callbacksPioB[i]();
 	}
-#endif
 }
 
 void PIOC_Handler(void) {
-#if defined(__SAM3X8E__)
 	uint32_t isr = PIOC->PIO_ISR;
 	uint32_t i;
 	for (i=0; i<32; i++, isr>>=1) {
@@ -175,11 +164,9 @@ void PIOC_Handler(void) {
 		if (callbacksPioC[i])
 			callbacksPioC[i]();
 	}
-#endif
 }
 
 void PIOD_Handler(void) {
-#if defined(__SAM3X8E__)
 	uint32_t isr = PIOD->PIO_ISR;
 	uint32_t i;
 	for (i=0; i<32; i++, isr>>=1) {
@@ -188,7 +175,6 @@ void PIOD_Handler(void) {
 		if (callbacksPioD[i])
 			callbacksPioD[i]();
 	}
-#endif
 }
 
 #ifdef __cplusplus

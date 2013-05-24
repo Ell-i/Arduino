@@ -93,24 +93,24 @@ typedef void (*voidFuncPtr)( void ) ;
 typedef enum _EAnalogChannel
 {
   NO_ADC=-1,
-  ADC_CH0=0,
-  ADC_CH1,
-  ADC_CH2,
-  ADC_CH3,
-  ADC_CH4,
-  ADC_CH5,
-  ADC_CH6,
-  ADC_CH7,
-  ADC_CH8,
-  ADC_CH9,
-  ADC_CH10,
-  ADC_CH11,
-  ADC_CH12,
-  ADC_CH13,
-  ADC_CH14,
-  ADC_CH15,
-  DA_CH0,
-  DA_CH1
+  ADC0=0,
+  ADC1,
+  ADC2,
+  ADC3,
+  ADC4,
+  ADC5,
+  ADC6,
+  ADC7,
+  ADC8,
+  ADC9,
+  ADC10,
+  ADC11,
+  ADC12,
+  ADC13,
+  ADC14,
+  ADC15,
+  DA0,
+  DA1
 } EAnalogChannel ;
 
 #define ADC_CHANNEL_NUMBER_NONE 0xffffffff
@@ -201,8 +201,6 @@ extern const PinDescription g_APinDescription[] ;
 #include "wiring_shift.h"
 #include "WInterrupts.h"
 
-#if defined(__SAM3X8E__)
-
 // USB Device
 #define USB_VID            0x2341 // arduino LLC vid
 #define USB_PID_LEONARDO   0x0034
@@ -211,7 +209,5 @@ extern const PinDescription g_APinDescription[] ;
 #include "USB/USBDesc.h"
 #include "USB/USBCore.h"
 #include "USB/USBAPI.h"
-
-#endif /* __SAM3X8E__ */
 
 #endif // Arduino_h

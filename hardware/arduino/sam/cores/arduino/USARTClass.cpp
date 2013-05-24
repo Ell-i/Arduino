@@ -23,8 +23,6 @@
 
 // Constructors ////////////////////////////////////////////////////////////////
 
-extern "C" { volatile int __init_magic = 0; }
-
 USARTClass::USARTClass( Usart* pUsart, IRQn_Type dwIrq, uint32_t dwId, RingBuffer* pRx_buffer )
 {
   _rx_buffer = pRx_buffer ;
@@ -32,15 +30,12 @@ USARTClass::USARTClass( Usart* pUsart, IRQn_Type dwIrq, uint32_t dwId, RingBuffe
   _pUsart=pUsart ;
   _dwIrq=dwIrq ;
   _dwId=dwId ;
-
-  __init_magic = 1;
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
 
 void USARTClass::begin( const uint32_t dwBaudRate )
 {
-#if defined(__SAM3X8E__)
   // Configure PMC
   pmc_enable_periph_clk( _dwId ) ;
 
@@ -66,27 +61,6 @@ void USARTClass::begin( const uint32_t dwBaudRate )
 
   // Enable receiver and transmitter
   _pUsart->US_CR = US_CR_RXEN | US_CR_TXEN ;
-#endif
-#if defined(__STM32F051__)
-  /* Change the GPIO pins PA9 and PA10 to the USART mode */
-  /* XXX: Works only for Serial for now, not for Serial1 */
-  GPIOA->AFR[1] &= ~(GPIO_AFRH_AFRH1     | GPIO_AFRH_AFRH2    );
-  GPIOA->AFR[1] |=  (GPIO_AFRx_AFRx1_AF1 | GPIO_AFRx_AFRx2_AF1);
-  GPIOA->MODER  &= ~(GPIO_MODER_MODER9_0  | GPIO_MODER_MODER10_0);
-  GPIOA->MODER  |=  (GPIO_MODER_MODER9_1  | GPIO_MODER_MODER10_1);
-
-  /* Set the baud rate -- use 16 bit oversampling */
-  _pUsart->BRR  = SystemCoreClock / dwBaudRate;
-
-#if 1
-  if (_pUsart == USART1) {
-      GPIOC->ODR   |=  GPIO_ODR_6;
-  }
-#endif
-
-  /* Enable the transmitter and the USART */
-  _pUsart->CR1 |= USART_CR1_TE | USART_CR1_UE;
-#endif
 }
 
 void USARTClass::end( void )
@@ -94,7 +68,6 @@ void USARTClass::end( void )
   // clear any received data
   _rx_buffer->_iHead = _rx_buffer->_iTail ;
 
-#if defined(__SAM3X8E__)
   // Disable UART interrupt in NVIC
   NVIC_DisableIRQ( _dwIrq ) ;
 
@@ -102,7 +75,6 @@ void USARTClass::end( void )
   flush();
 
   pmc_disable_periph_clk( _dwId ) ;
-#endif
 }
 
 int USARTClass::available( void )
@@ -131,40 +103,24 @@ int USARTClass::read( void )
 
 void USARTClass::flush( void )
 {
-#if defined(__SAM3X8E__)
   // Wait for transmission to complete
   while ((_pUsart->US_CSR & US_CSR_TXRDY) != US_CSR_TXRDY)
 	;
-#endif
 }
 
 size_t USARTClass::write( const uint8_t uc_data )
 {
-#if defined(__SAM3X8E__)
   // Check if the transmitter is ready
   while ((_pUsart->US_CSR & US_CSR_TXRDY) != US_CSR_TXRDY)
     ;
 
   // Send character
   _pUsart->US_THR = uc_data ;
-#endif
-#if defined(__STM32F051__)
-#endif
-  /* Send the character */
-  _pUsart->TDR = uc_data;
-
-  /* Wait until the data has been consumed */
-  while ((_pUsart->ISR & USART_ISR_TXE) == 0) {
-      GPIOC->ODR ^= GPIO_ODR_9;
-      /* XXX yield() */;
-  }
-
   return 1;
 }
 
 void USARTClass::IrqHandler( void )
 {
-#if defined(__SAM3X8E__)
   uint32_t status = _pUsart->US_CSR;
 
   // Did we receive data ?
@@ -178,6 +134,5 @@ void USARTClass::IrqHandler( void )
 	// TODO: error reporting outside ISR
     _pUsart->US_CR |= US_CR_RSTSTA;
   }
-#endif
 }
 

@@ -51,7 +51,7 @@ extern void pinMode( uint32_t dwPin, uint32_t dwMode ) ;
  * \param dwPin the pin number
  * \param dwVal HIGH or LOW
  */
-//extern void digitalWrite( uint32_t dwPin, uint32_t dwVal ) ;
+extern void digitalWrite( uint32_t dwPin, uint32_t dwVal ) ;
 
 /**
  * \brief Reads the value from a specified digital pin, either HIGH or LOW.
@@ -60,7 +60,7 @@ extern void pinMode( uint32_t dwPin, uint32_t dwMode ) ;
  *
  * \return HIGH or LOW
  */
-//extern int digitalRead( uint32_t ulPin ) ;
+extern int digitalRead( uint32_t ulPin ) ;
 
 #ifdef __cplusplus
 }

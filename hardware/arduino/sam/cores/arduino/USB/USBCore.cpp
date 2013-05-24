@@ -19,8 +19,6 @@
 #include "Reset.h"
 #include <stdio.h>
 
-#ifdef USB_ENABLED
-
 //#define TRACE_CORE(x)	x
 #define TRACE_CORE(x)
 
@@ -866,5 +864,3 @@ bool USBDevice_::configured()
 void USBDevice_::poll()
 {
 }
-
-#endif

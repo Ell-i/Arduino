@@ -22,11 +22,8 @@
  extern "C" {
 #endif
 
-#if defined(__SAM3X8E__)
-
 extern void pinMode( uint32_t ulPin, uint32_t ulMode )
 {
-
 	if ( g_APinDescription[ulPin].ulPinType == PIO_NOT_A_PIN )
     {
         return ;
@@ -105,8 +102,6 @@ extern int digitalRead( uint32_t ulPin )
 
 	return LOW ;
 }
-
-#endif
 
 #ifdef __cplusplus
 }

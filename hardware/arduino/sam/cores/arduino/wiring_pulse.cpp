@@ -36,7 +36,6 @@ extern uint32_t pulseIn( uint32_t pin, uint32_t state, uint32_t timeout )
 	uint32_t numloops = 0;
 	uint32_t maxloops = microsecondsToClockCycles(timeout) / 22;
 	
-#if defined(__SAM3X8E__)
 	// wait for any previous pulse to end
 	while (PIO_Get(p.pPort, PIO_INPUT, p.ulPin) == state)
 		if (numloops++ == maxloops)
@@ -53,7 +52,6 @@ extern uint32_t pulseIn( uint32_t pin, uint32_t state, uint32_t timeout )
 			return 0;
 		width++;
 	}
-#endif
 
 	// convert the reading to microseconds. The loop has been determined
 	// to be 52 clock cycles long and have about 16 clocks between the edge
