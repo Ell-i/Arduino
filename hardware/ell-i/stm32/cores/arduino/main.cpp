@@ -47,11 +47,11 @@ extern void net_loop(void);
 int main( void )
 {
     init();
-#if 1
-    GPIOC->ODR   |= GPIO_ODR_9;
-    delay(1000);
-    GPIOC->ODR   &= ~GPIO_ODR_9;
-    GPIOC->ODR   &= ~GPIO_ODR_6;
+
+#if DEBUG
+    DEBUG_SET_LED0(1);
+    delay(100);
+    DEBUG_SET_LED0(0);
 #endif
 
 #if NET
@@ -59,7 +59,8 @@ int main( void )
 #endif
 
     setup();
-    GPIOC->ODR   |= GPIO_ODR_7;
+
+    DEBUG_SET_LED0(1);
 
     for (;;) {
         loop();

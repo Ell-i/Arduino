@@ -89,6 +89,11 @@ $(OBJDIR)/%.o : %.cpp
 
 $(OBJDIR)/%.o : %.s
 	$(COMPILE.s) $< -o $@
+
+.SUFFIXES: .bin .hex
+
+%.bin: %
+	$(OBJCOPY) -O binary $< $@
 #
 # Targets
 #

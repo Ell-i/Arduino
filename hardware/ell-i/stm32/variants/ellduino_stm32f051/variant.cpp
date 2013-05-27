@@ -50,10 +50,10 @@ const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0, 0, 0, 0, 0, 0, };
 
 void init(void) {
 #if DEBUG
-    /* Start GPIO C early, and make 8, 9, 10 and 11 outputs */
+    /* Start GPIO C early, and make 6 (DEBUG0) and 7 (DEBUG1) outputs */
     RCC->AHBENR  |= RCC_AHBENR_GPIOCEN;
-    GPIOC->MODER |= GPIO_MODER_MODER6_0 | GPIO_MODER_MODER7_0 | GPIO_MODER_MODER8_0 | GPIO_MODER_MODER9_0;
-    GPIOC->ODR   |= GPIO_ODR_8;
+    GPIOC->MODER |= GPIO_MODER_MODER6_0 | GPIO_MODER_MODER7_0;
+    DEBUG_SET_LED0(1);
 #endif
     /*
       In STM32F, SystemInit and __libc_init_array are called from the Reset_Handler,
@@ -62,19 +62,15 @@ void init(void) {
 
     /* SysTick end of count event each 1ms */
     //SysTick_Config(SystemCoreClock / 1000); /* CMSIS */
-#if DEBUG
-    GPIOC->ODR |= GPIO_ODR_9;
-#endif
+    DEBUG_SET_LED0(0);
     SysTick_Config(RCC_GetHCLKFreq() / 1000); /* CMSIS */
 
+    DEBUG_SET_LED0(1);
     Peripheral_Init();
-
-#if DEBUG
-    GPIOC->ODR &= ~GPIO_ODR_9;
-#endif
 
     assert((SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) == SysTick_CTRL_ENABLE_Msk);
 
+    DEBUG_SET_LED0(0);
     __enable_irq();
 
     GPIOC->BSRR |= GPIO_BSRR_BS_11; // XXX Abstract into a function/macro

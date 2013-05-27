@@ -149,9 +149,15 @@ const struct device_register_init_static_32bit general_purpose_io_a[] = {
         | ! GPIO_MODER_MODER5    /* 00  PA5  A6 */
         | ! GPIO_MODER_MODER6    /* 00  PA6  A7 */
         | ! GPIO_MODER_MODER7    /* 00  PA7  D5 */
+#ifdef DEBUG
+        |   GPIO_MODER_MODER8_0  /* 01  PA8  Debugging */
+        |   GPIO_MODER_MODER9_0  /* 01  PA9  Debugging */
+        |   GPIO_MODER_MODER10_0 /* 01 PA10  Debugging */
+#else
         | ! GPIO_MODER_MODER8    /* 00  PA8  D2 */
         | ! GPIO_MODER_MODER9    /* 00  PA9  D1 (TX0) */
         | ! GPIO_MODER_MODER10   /* 00 PA10  D0 (RX0) */
+#endif
         | ! GPIO_MODER_MODER11   /* 00 PA11  DAC1  (CTS0), used as input by default */
         | ! GPIO_MODER_MODER12   /* 00 PA12  CANRX (RTS0), used as input by default */
 #ifdef DISABLE_SWD
@@ -345,16 +351,16 @@ const struct device_register_init_static_32bit general_purpose_io_c[] = {
         | ! GPIO_MODER_MODER3    /* 00  PC3  A3 */
         | ! GPIO_MODER_MODER4    /* 00  PC4  A8 */
         | ! GPIO_MODER_MODER5    /* 00  PC5  A9 */
-#ifdef DISABLE_DISCOVERY_LEDS
-        | ! GPIO_MODER_MODER6    /* 00  PC6  TX3 */
-        | ! GPIO_MODER_MODER7    /* 00  PC7  RX3 */
-        | ! GPIO_MODER_MODER8    /* 00  PC8  D4, Timer 3 Channel 3 */
-        | ! GPIO_MODER_MODER9    /* 00  PC9  D5, Timer 3 Channel 4 */
-#else
+#ifdef DEBUG
         |   GPIO_MODER_MODER6_0  /* 01  PC6  Debugging */
         |   GPIO_MODER_MODER7_0  /* 01  PC7  Debugging */
         |   GPIO_MODER_MODER8_0  /* 01  PC8  Discovery board Blue LED */
         |   GPIO_MODER_MODER9_0  /* 01  PC9  Discovery board Green LED */
+#else
+        | ! GPIO_MODER_MODER6    /* 00  PC6  TX3 */
+        | ! GPIO_MODER_MODER7    /* 00  PC7  RX3 */
+        | ! GPIO_MODER_MODER8    /* 00  PC8  D4, Timer 3 Channel 3 */
+        | ! GPIO_MODER_MODER9    /* 00  PC9  D5, Timer 3 Channel 4 */
 #endif
         | ! GPIO_MODER_MODER10   /* 00 PC10  INT  ENC28J60 */
         |   GPIO_MODER_MODER11_0 /* 01 PC11  RES  ENC28J60 */
