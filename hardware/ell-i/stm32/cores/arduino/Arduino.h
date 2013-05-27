@@ -180,24 +180,6 @@ typedef enum _ETCChannel
 #define PIN_ATTR_PWM           (1UL<<3)
 #define PIN_ATTR_TIMER         (1UL<<4)
 
-/* Types used for the tables below */
-typedef struct _PinDescription
-{
-  Pio* pPort ;
-  uint32_t ulPin ;
-  uint32_t ulPeripheralId ;
-  EPioType ulPinType ;
-  uint32_t ulPinConfiguration ;
-  uint32_t ulPinAttribute ;
-  EAnalogChannel ulAnalogChannel ; /* Analog pin in the Arduino context (label on the board) */
-  EAnalogChannel ulADCChannelNumber ; /* ADC Channel number in the SAM device */
-  EPWMChannel ulPWMChannel ;
-  ETCChannel ulTCChannel ;
-} PinDescription ;
-
-/* Pins table to be instanciated into variant.cpp */
-extern const PinDescription g_APinDescription[] ;
-
 #ifdef __cplusplus
 } // extern "C"
 

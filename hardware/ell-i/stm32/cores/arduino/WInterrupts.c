@@ -70,7 +70,7 @@ void attachInterrupt(uint32_t pin, void (*callback)(void), uint32_t mode)
 		__initialize();
 		enabled = 1;
 	}
-
+#if defined(__SAM3X8E__)
 	// Retrieve pin information
 	Pio *pio = g_APinDescription[pin].pPort;
 	uint32_t mask = g_APinDescription[pin].ulPin;
@@ -80,7 +80,6 @@ void attachInterrupt(uint32_t pin, void (*callback)(void), uint32_t mode)
 	for (t = mask; t>1; t>>=1, pos++)
 		;
 
-#if defined(__SAM3X8E__)
 	// Set callback function
 	if (pio == PIOA)
 		callbacksPioA[pos] = callback;
@@ -125,11 +124,11 @@ void attachInterrupt(uint32_t pin, void (*callback)(void), uint32_t mode)
 
 void detachInterrupt(uint32_t pin)
 {
+#if defined(__SAM3X8E__)
 	// Retrieve pin information
 	Pio *pio = g_APinDescription[pin].pPort;
 	uint32_t mask = g_APinDescription[pin].ulPin;
 
-#if defined(__SAM3X8E__)
 	// Disable interrupt
 	pio->PIO_IDR = mask;
 #endif
