@@ -10,10 +10,6 @@
 #include <stm32f0xx.h>
 #include <stm32f0xx_extra.h>
 
-/* Arduino.h */
-
-typedef int Pio, EPioType;
-
 /* variant.h */
 
 typedef struct stm32_pinDescription {
@@ -27,10 +23,6 @@ typedef struct stm32_pinDescription {
     const uint8_t  pin_number;
     const uint8_t  pin_adc_channel;
 } stm32_pinDescription_t;
-
-/* USARTClass.h */
-
-typedef USART_TypeDef Usart;
 
 /* wiring.c */
 

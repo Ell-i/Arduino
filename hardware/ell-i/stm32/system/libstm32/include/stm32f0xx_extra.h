@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Pekka Nikander.  See NOTICE for licensing information.
+ * Copyright 2013 Ell-i.org.  All rights reserved.
  */
 
 /*
