@@ -18,6 +18,9 @@
 
 #define ARDUINO_MAIN
 #include "Arduino.h"
+#include "debug.h"
+
+#define NET 1
 
 /*
  * Cortex-M3 Systick IT handler
@@ -32,6 +35,10 @@ extern void SysTick_Handler( void )
 
 extern "C" {
 extern void init(void);
+#if NET
+extern void net_init(void);
+extern void net_loop(void);
+#endif
 }
 
 /*
@@ -47,8 +54,8 @@ int main( void )
     GPIOC->ODR   &= ~GPIO_ODR_6;
 #endif
 
-#if defined(USBCON)
-    USBDevice.attach();
+#if NET
+    net_init();
 #endif
 
     setup();
@@ -57,6 +64,9 @@ int main( void )
     for (;;) {
         loop();
         if (serialEventRun) serialEventRun();
+#if NET
+        net_loop();
+#endif
     }
 
     return 0;

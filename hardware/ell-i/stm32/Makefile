@@ -25,8 +25,12 @@ SYSTEM_PATH  := system/libstm32
 VARIANT_PATH := variants/$(VARIANT)
 CMSIS_PATH   := ../../arduino/sam/system/CMSIS/CMSIS
 
-VPATH          :=   $(VARIANT_PATH)   $(CORE_PATH)   $(SYSTEM_PATH)/source
+VPATH          :=   $(VARIANT_PATH)   $(CORE_PATH)   $(SYSTEM_PATH)/source  \
+		    $(SYSTEM_PATH)/enc28j60 \
+		    $(SYSTEM_PATH)/net
 INCLUDE_CFLAGS := -I$(VARIANT_PATH) -I$(CORE_PATH) -I$(SYSTEM_PATH)/include \
+		  -I$(SYSTEM_PATH)/enc28j60 \
+		  -I$(SYSTEM_PATH)/net \
 	          -I$(SYSTEM_PATH)  -I$(CMSIS_PATH)/Include
 
 OBJDIR         := $(BUILD_PATH)
@@ -67,12 +71,15 @@ CORE_CXX_SRCS  := $(notdir $(wildcard $(CORE_PATH)/*.cpp))
 #
 # Object files
 #
-VARIANT_OBJS := startup_stm32f0xx.o stm32f051_init.o variant.o
+VARIANT_OBJS := startup_stm32f0xx.o stm32f051_init.o variant.o net.o
 CORE_OBJS    := $(patsubst %.c,   %.o, $(CORE_C_SRCS))   \
                 $(patsubst %.cpp, %.o, $(CORE_CXX_SRCS))
 SYSTEM_OBJS  := system_stm32f0xx.o
+ETH_OBJS     := enc28j60.o enc28j60_init.o enc28j60_packet.o enc28j60_stm32f0_spi.o
+NET_OBJS     := uip.o uip_arp.o uiplib.o
 
 OBJS         := $(addprefix $(OBJDIR)/, $(VARIANT_OBJS) $(CORE_OBJS) $(SYSTEM_OBJS))
+OBJS	     += $(addprefix $(OBJDIR)/, $(ETH_OBJS) $(NET_OBJS))
 
 $(OBJDIR)/%.o : %.c
 	$(COMPILE.c) $< -o $@

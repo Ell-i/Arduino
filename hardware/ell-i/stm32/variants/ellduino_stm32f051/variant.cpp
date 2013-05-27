@@ -1,5 +1,7 @@
 
 #include "Arduino.h"
+#include "enc28j60.h"
+#include "debug.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +42,12 @@ RCC_GetHCLKFreq(void) {
  * End of STM derived work
  */
 
+#if 0
+const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0xae, 0x68, 0x2e, 0xe2, 0xbf, 0xe0 };
+#else
+const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0, 0, 0, 0, 0, 0, };
+#endif
+
 void init(void) {
 #if DEBUG
     /* Start GPIO C early, and make 8, 9, 10 and 11 outputs */
@@ -68,6 +76,11 @@ void init(void) {
     assert((SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) == SysTick_CTRL_ENABLE_Msk);
 
     __enable_irq();
+
+    GPIOC->BSRR |= GPIO_BSRR_BS_11; // XXX Abstract into a function/macro
+    DEBUG_SET_LED1(1);
+    enc_init(mac_address);
+    DEBUG_SET_LED1(0);
 }
 
 /*
@@ -93,7 +106,6 @@ void SysTick_Handler(void)
         return;
 
     tickReset();
-
 }
 
 // ----------------------------------------------------------------------------

@@ -296,11 +296,13 @@ const struct device_register_init_static_32bit general_purpose_io_b[] = {
      */
     D32(GPIOB, OSPEEDR, ~0),
     /*
-     * Let the inputs to float.
+     * Let the inputs to float.  Handle ENC28J60 SPI.
      */
-#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
-    D32(GPIOB, PUPDR, 0),
-#endif
+    D32(GPIOB, PUPDR,
+        0
+        |   GPIO_PUPDR_PUPDR14_1  /* PB14  <- MISO    pull down */
+        ),
+
     /*
      * Pre-select the appropriate default AF for each pin so
      * that e.g. analogWrite does not need to change it.
@@ -757,9 +759,7 @@ const device_register_init_descriptor_t dri_tables[] = {
     DRI_DESCRIPTOR_MASKED_32BIT(RCC,   reset_and_clock_control),
     DRI_DESCRIPTOR_MASKED_32BIT(NVIC,  nvic),
     DRI_DESCRIPTOR_STATIC_32BIT(ADC1,  adc_start_calibrate),
-#if 0
     DRI_DESCRIPTOR_STATIC_16BIT(SPI2,  spi_enc28j60),
-#endif
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOA, general_purpose_io_a),
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOB, general_purpose_io_b),
     DRI_DESCRIPTOR_STATIC_32BIT(GPIOC, general_purpose_io_c),
