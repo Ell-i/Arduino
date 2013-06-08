@@ -27,7 +27,7 @@ size_t HardwareSerial::print(double value, int decimals) const {
     value += rounding;
 
     double mul = 1.0;
-    for (double h = value; h > 10.0; h /= 10) {
+    for (double h = value; h >= 10.0; h /= 10.0) {
         mul *= 10.0;
     }
     for (mul; mul >= 1.0; mul /= 10.0) {

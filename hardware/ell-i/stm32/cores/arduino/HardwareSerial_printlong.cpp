@@ -21,13 +21,13 @@ size_t HardwareSerial::print(unsigned long value, enum base base, bool isUnsigne
      * i.e. what is the highest multiplier.
      */
     unsigned long mul = 1;
-    for (unsigned long h = value; h > base; h /= base) {
+    for (unsigned long h = value; h >= base; h /= base) {
         mul *= base;
     }
     /* Write out the digits, starting from most significant one. */
     for (mul; mul >= 1; mul /= base) {
         const int digit = value / mul;
-        n += write(digit + (digit < 10? '0': 'A'));
+        n += write(digit + (digit < 10? '0': 'A' - 10));
         value = value % mul;
     }
 
