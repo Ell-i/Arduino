@@ -139,6 +139,18 @@ extern "C" {
     extern RingBuffer rx_buffer1;
 /* XXX Don't use a constructor at the moment, to initialise these as PODs */
     static const HardwareSerial Serial =  { 
+        USART2,
+        rx_buffer1,
+        GPIOA->AFR[1],
+        GPIOA->MODER,
+        ~(GPIO_AFRH_AFRH6     | GPIO_AFRH_AFRH7),
+          GPIO_AFRx_AFRx6_AF1 | GPIO_AFRx_AFRx7_AF1,
+        ~(GPIO_MODER_MODER14_0 | GPIO_MODER_MODER15_0),
+        (GPIO_MODER_MODER14_1  | GPIO_MODER_MODER15_1),
+        0, 0, 0, 0, /* XXX FIX THIS */
+    };
+
+    static const HardwareSerial Serial1 = {
         USART1, 
         rx_buffer,
         GPIOA->AFR[1],
@@ -147,16 +159,7 @@ extern "C" {
           GPIO_AFRx_AFRx1_AF1 | GPIO_AFRx_AFRx2_AF1,
         ~(GPIO_MODER_MODER9_0 | GPIO_MODER_MODER10_0),
         (GPIO_MODER_MODER9_1  | GPIO_MODER_MODER10_1),
-        0, 0, 0, 0,
-    };
-        
-    static const HardwareSerial Serial1 = {
-        USART2,
-        rx_buffer1,
-        GPIOA->AFR[1], /* XXX */
-        GPIOA->MODER,  /* XXX */
-        0, 0, 0, 0,
-        0, 0, 0, 0,
+        0, 0, 0, 0, /* XXX FIX THIS */
     };
 };
 
