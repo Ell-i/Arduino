@@ -124,6 +124,16 @@ static const uint8_t DAC0 = 34;
 
 #ifdef __cplusplus
 
+/*
+ * Return the STM32F0 chip unique id.
+ */
+inline void getStmUniqueId(unsigned char uid[3 * sizeof(uint32_t)]) {
+    uint32_t *p = (uint32_t *)uid;
+    p[0] = *(uint32_t *)(0x1FFFF7AC + 0x00);
+    p[1] = *(uint32_t *)(0x1FFFF7AC + 0x04);
+    p[2] = *(uint32_t *)(0x1FFFF7AC + 0x08);
+}
+
 extern "C" {
     extern RingBuffer rx_buffer;
     extern RingBuffer rx_buffer1;
