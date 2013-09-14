@@ -40,15 +40,18 @@ const static xPSR_Type XPSR_DEFAULT_VALUE = {
  * The memory image of an execution context.
  */
 struct thread_execution_context {
-    uint32_t lr_exc_return;
+    /* First regs pushed/popped */
+    uint32_t r10;
+    uint32_t r11;
     uint32_t r4;
     uint32_t r5;
     uint32_t r6;
     uint32_t r7;
+    /* Next regs pushed/popped */
     uint32_t r8;
     uint32_t r9;
-    uint32_t r10;
-    uint32_t r11;
+    uint32_t lr_exc_return;
+    /* Exception context */
     uint32_t r0;
     uint32_t r1;
     uint32_t r2;
@@ -70,6 +73,14 @@ struct thread_execution_context {
  */
 static inline void __thread_switch() {
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+#if 0
+    __asm__ volatile(
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        "nop\n\t"
+        );
+#endif
 }
 
 /* See thread_switch.c  */

@@ -46,6 +46,7 @@ AS       := $(COMPILER_PATH)arm-none-eabi-as
 CXX      := $(COMPILER_PATH)arm-none-eabi-g++
 AR       := $(COMPILER_PATH)arm-none-eabi-ar
 OBJCOPY  := $(COMPILER_PATH)arm-none-eabi-objcopy
+OBJDUMP  := $(COMPILER_PATH)arm-none-eabi-objdump
 SIZE     := $(COMPILER_PATH)arm-none-eabi-size
 
 VARIANT_CFLAGS := -mcpu=cortex-m0 -mthumb -DF_CPU=48000000L 
@@ -74,7 +75,11 @@ CORE_CXX_SRCS  := $(notdir $(wildcard $(CORE_PATH)/*.cpp))
 VARIANT_OBJS := startup_stm32f0xx.o stm32f051_init.o variant.o net.o
 CORE_OBJS    := $(patsubst %.c,   %.o, $(CORE_C_SRCS))   \
                 $(patsubst %.cpp, %.o, $(CORE_CXX_SRCS))
-SYSTEM_OBJS  := system_stm32f0xx.o
+SYSTEM_OBJS  := system_stm32f0xx.o \
+		thread_switch.o \
+		thread_idle.o \
+		thread_exit.o \
+		serial_helper.o
 ETH_OBJS     := enc28j60.o enc28j60_init.o enc28j60_packet.o enc28j60_stm32f0_spi.o
 NET_OBJS     := uip.o uip_arp.o uiplib.o
 
@@ -90,10 +95,14 @@ $(OBJDIR)/%.o : %.cpp
 $(OBJDIR)/%.o : %.s
 	$(COMPILE.s) $< -o $@
 
-.SUFFIXES: .bin .hex
+.SUFFIXES: .bin .hex .lst
 
 %.bin: %
 	$(OBJCOPY) -O binary $< $@
+
+%.lst: %
+	$(OBJDUMP) -S $< > $@
+
 #
 # Targets
 #

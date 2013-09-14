@@ -42,7 +42,18 @@
  */
 
 volatile struct thread_execution_context *volatile 
-     __thread_other_execution_context;
+__thread_other_execution_context;
+
+/**
+ * XXX
+ */
+
+#if 1
+void yield(void) {
+    if (__thread_other_execution_context)
+        __thread_switch();
+}
+#endif
 
 /**
  * Initialise the low-level threading code.  
@@ -130,17 +141,20 @@ PendSV_Handler() {
 
     // Push the unsaved registers to the old stack, using r0
     __asm__ volatile (
-        "mov r1,  lr                                 \n\t"
-        "mov r2,  r0                                 \n\t"
-        "stm r2!, {r1, r4, r5, r6, r7}               \n\t"
+        // Take a working copy of r0
+        "mov r1,  r0                                 \n\t"
+        // "Reverse" push r10, r11, r4, r5, r6, r7
+        "mov r2,  r10                                \n\t"
+        "mov r3,  r11                                \n\t"
+        "stm r1!, {r2, r3, r4, r5, r6, r7}           \n\t"
+        // "Reverse" push r8, r9, lr
         "mov r4,  r8                                 \n\t"
         "mov r5,  r9                                 \n\t"
-        "mov r6,  r10                                \n\t"
-        "mov r7,  r11                                \n\t"
-        "stm r2!, {r4, r5, r6, r7}"
+        "mov r6,  lr                                 \n\t"
+        "stm r1!, {r4, r5, r6}                       \n\t"
         :
         : "r"  (old_stack)
-        : "r1", "r2", "r4", "r5", "r6", "r7", "memory"
+        : "r1", "r2", "r3", "r4", "r5", "r6", "memory"
         );
 
     /*
@@ -191,29 +205,31 @@ PendSV_Handler() {
 
     // Note that we will move the exc_return value to the pc, causing
     // the routine to perform an exception return within the new thread
-    // context.  But first load it to r0 so that we can save the top
+    // context.  But first load it to r3 so that we can save the top
     // of the stack to the psp before actually returning.
-    register void *new_exc_return_value asm("r0");
+    register void *new_exc_return_value asm("r3");
 
     // Pop the registers not saved by the interrupt hardware.
     __asm__ volatile (
-        "ldm %0!, {%1, r4, r5, r6, r7}              \n\t"
-        "ldm %0!, {r2, r3}                          \n\t"
-        "mov r8, r2                                 \n\t"
-        "mov r9, r3                                 \n\t"
-        "ldm %0!, {r2, r3}                          \n\t"
-        "mov r10, r2                                \n\t"
+        // Pop r10, r11, r4, r5, r6, r7
+        "ldm %0!, {r2, r3, r4, r5, r6, r7}          \n\t"
         "mov r11, r3                                \n\t"
+        "mov r10, r2                                \n\t"
+        // Pop r8, r9, lr, leaving lr at r3
+        "ldm %0!, {r0, r2, %1}                      \n\t"
+        "mov r8, r0                                 \n\t"
+        "mov r9, r2                                 \n\t"
         : "=r" (new_stack), "=r" (new_exc_return_value)
         : "0" (new_stack)
-        : "r2", "r3", "r4", "r5", "r6", "r7",
+        : "r0", "r2", 
+          "r4", "r5", "r6", "r7",
           "r8", "r9", "r10", "r11"
         );
 
     // Restore the psp to its pre-interrupt value 
     __asm__ volatile ("msr psp, %0" : : "r" (new_stack));
 
-    // Move the exc_return value to the pc, causing an exception return.
+    // Branch to the exc_return value at r3, causing an exception return.
     __asm__ volatile ("bx  %0" : : "r" (new_exc_return_value));
     /* NOTREACHED */
 
