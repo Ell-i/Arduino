@@ -19,26 +19,12 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 #include "debug.h"
+#include "net.h"
 
 #define NET 1
 
-/*
- * Cortex-M3 Systick IT handler
- */
-/*
-extern void SysTick_Handler( void )
-{
-  // Increment tick count each ms
-  TimeTick_Increment() ;
-}
-*/
-
 extern "C" {
 extern void init(void);
-#if NET
-extern void net_init(void);
-extern void net_loop(void);
-#endif
 }
 
 /*
@@ -55,7 +41,8 @@ int main( void )
 #endif
 
 #if NET
-    net_init();
+    /* Spawns network activity in another thread */
+    net_spawn();
 #endif
 
     setup();
@@ -65,9 +52,6 @@ int main( void )
     for (;;) {
         loop();
         if (serialEventRun) serialEventRun();
-#if NET
-        net_loop();
-#endif
     }
 
     return 0;

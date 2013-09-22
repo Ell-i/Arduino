@@ -194,7 +194,7 @@ PROCESS_THREAD(simple_udp_process, ev, data)
 {
   struct simple_udp_connection *c;
   PROCESS_BEGIN();
-
+  
   while(1) {
     PROCESS_WAIT_EVENT();
     if(ev == tcpip_event) {

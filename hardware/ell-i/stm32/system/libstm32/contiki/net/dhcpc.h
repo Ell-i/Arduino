@@ -40,7 +40,7 @@ struct dhcpc_state {
   uint32_t ticks;
   const void *mac_addr;
   int mac_len;
-
+  
   uint8_t serverid[4];
 
   uint16_t lease_time[2];

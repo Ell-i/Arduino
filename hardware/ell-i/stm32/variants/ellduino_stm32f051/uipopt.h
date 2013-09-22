@@ -5,13 +5,13 @@
 
 #include "Arduino.h"
 
+typedef unsigned int uip_stats_t;
+
 #define CC_ATTRIBUTE_MAY_ALIAS
-#define CCIF
+#if 0
 #define UIP_APPCALL()
 #define UIP_UDP_APPCALL()
-
-typedef unsigned int clock_time_t;
-typedef unsigned int uip_stats_t;
+#endif
 
 /**
  * \defgroup uipopt Configuration options for uIP
@@ -330,7 +330,7 @@ typedef unsigned int uip_stats_t;
  * \hideinitializer
  */
 #ifndef UIP_CONF_MAX_CONNECTIONS
-#define UIP_CONNS       10
+#define UIP_CONNS       1
 #else /* UIP_CONF_MAX_CONNECTIONS */
 #define UIP_CONNS (UIP_CONF_MAX_CONNECTIONS)
 #endif /* UIP_CONF_MAX_CONNECTIONS */

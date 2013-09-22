@@ -5,6 +5,8 @@
 
 #ifdef __cplusplus
 extern "C" {
+#include "contiki.h"
+#include "sys/etimer.h"
 #endif
 
 extern void Peripheral_Init(void);
@@ -42,11 +44,9 @@ RCC_GetHCLKFreq(void) {
  * End of STM derived work
  */
 
-#if 0
-const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0xae, 0x68, 0x2e, 0xe2, 0xbf, 0xe0 };
-#else
-const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0, 0, 0, 0, 0, 0, };
-#endif
+/*
+ * Usually called from main.cpp in cores/arduino
+ */
 
 void init(void) {
 #if DEBUG
@@ -55,6 +55,7 @@ void init(void) {
     GPIOC->MODER |= GPIO_MODER_MODER6_0 | GPIO_MODER_MODER7_0;
     DEBUG_SET_LED0(1);
 #endif
+
     /*
       In STM32F, SystemInit and __libc_init_array are called from the Reset_Handler,
       before main() gets called, and there is no need to call them again from here.
@@ -74,9 +75,6 @@ void init(void) {
     __enable_irq();
 
     GPIOC->BSRR |= GPIO_BSRR_BS_11; // XXX Abstract into a function/macro
-    DEBUG_SET_LED1(1);
-    enc_init(mac_address);
-    DEBUG_SET_LED1(0);
 }
 
 /*
@@ -97,6 +95,12 @@ void SysTick_Handler(void)
 #if DEBUG
     GPIOC->ODR ^= GPIO_ODR_8;
 #endif
+
+    if (etimer_pending()) {
+        etimer_request_poll();
+    }
+
+    // TimingDelay_Decrement();
 
     if (sysTickHook())
         return;

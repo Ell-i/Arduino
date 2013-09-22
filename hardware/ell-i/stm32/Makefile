@@ -27,11 +27,21 @@ CMSIS_PATH   := ../../arduino/sam/system/CMSIS/CMSIS
 
 VPATH          :=   $(VARIANT_PATH)   $(CORE_PATH)   $(SYSTEM_PATH)/source  \
 		    $(SYSTEM_PATH)/enc28j60 \
-		    $(SYSTEM_PATH)/net
+		    $(SYSTEM_PATH)/contiki/sys \
+		    $(SYSTEM_PATH)/contiki/lib \
+		    $(SYSTEM_PATH)/contiki/net \
+		    $(SYSTEM_PATH)/contiki/webserver \
+		    $(SYSTEM_PATH)/contiki/apps/er-coap-13 \
+		    $(SYSTEM_PATH)/contiki/apps/erbium \
+
 INCLUDE_CFLAGS := -I$(VARIANT_PATH) -I$(CORE_PATH) -I$(SYSTEM_PATH)/include \
 		  -I$(SYSTEM_PATH)/enc28j60 \
-		  -I$(SYSTEM_PATH)/net \
-	          -I$(SYSTEM_PATH)  -I$(CMSIS_PATH)/Include
+		  -I$(SYSTEM_PATH)/contiki/net \
+		  -I$(SYSTEM_PATH)/contiki/sys \
+		  -I$(SYSTEM_PATH)/contiki \
+		  -I$(SYSTEM_PATH)/contiki/apps/erbium \
+		  -I$(SYSTEM_PATH)/contiki/apps/er-coap-13 \
+	          -I$(SYSTEM_PATH)  -I$(CMSIS_PATH)/Include \
 
 OBJDIR         := $(BUILD_PATH)
 
@@ -50,6 +60,12 @@ OBJDUMP  := $(COMPILER_PATH)arm-none-eabi-objdump
 SIZE     := $(COMPILER_PATH)arm-none-eabi-size
 
 VARIANT_CFLAGS := -mcpu=cortex-m0 -mthumb -DF_CPU=48000000L 
+#if 1
+VARIANT_CFLAGS += -DREST=coap_rest_implementation \
+	-DCOAP_MAX_OPEN_TRANSACTIONS=2 \
+	-DUIP_CONF_BUFFER_SIZE=256 \
+	-DWITH_COAP=13
+#endif
 
 BASE_CFLAGS   := -g -Os -w \
 	-ffunction-sections -fdata-sections \
@@ -76,15 +92,29 @@ VARIANT_OBJS := startup_stm32f0xx.o stm32f051_init.o variant.o net.o
 CORE_OBJS    := $(patsubst %.c,   %.o, $(CORE_C_SRCS))   \
                 $(patsubst %.cpp, %.o, $(CORE_CXX_SRCS))
 SYSTEM_OBJS  := system_stm32f0xx.o \
+		newlib_syscalls.o \
 		thread_switch.o \
 		thread_idle.o \
 		thread_exit.o \
 		serial_helper.o
 ETH_OBJS     := enc28j60.o enc28j60_init.o enc28j60_packet.o enc28j60_stm32f0_spi.o
+TCP_OBJS     := autostart.o process.o timer.o tcpip.o
 NET_OBJS     := uip.o uip_arp.o uiplib.o
+COAP_OBJS    := process.o etimer.o erbium.o list.o memb.o timer.o stimer.o \
+		tcpip.o random.o uip-udp-packet.o \
+		er-coap-13.o er-coap-13-engine.o er-coap-13-observing.o  \
+		er-coap-13-separate.o er-coap-13-transactions.o \
+		er-example-server.o autostart.o
+# DHCP_OBJS    := dhcpc.o dhcp.o resolv.o
+# WEBSERV_OBJS := psock.o memb.o httpd.o http-strings.o httpd-cgi.o httpd-fs.o \
+#                 webserver-nogui.o
 
 OBJS         := $(addprefix $(OBJDIR)/, $(VARIANT_OBJS) $(CORE_OBJS) $(SYSTEM_OBJS))
 OBJS	     += $(addprefix $(OBJDIR)/, $(ETH_OBJS) $(NET_OBJS))
+# OBJS         += $(addprefix $(OBJDIR)/, $(TCP_OBJS))
+# OBJS         += $(addprefix $(OBJDIR)/, $(DHCP_OBJS) $(WEBSERV_OBJS))
+OBJS         += $(addprefix $(OBJDIR)/, $(COAP_OBJS))
+
 
 $(OBJDIR)/%.o : %.c
 	$(COMPILE.c) $< -o $@
@@ -128,7 +158,7 @@ LDFLAGS  := \
 	-Wl,--check-sections -Wl,--gc-sections \
 	-Wl,--entry=Reset_Handler \
 	-Wl,--warn-common -Wl,--warn-section-align \
-	-Wl,--start-group ${OBJS}  -Wl,--end-group
+	-Wl,--start-group ${OBJS}  -Wl,--end-group \
 
 # -Wl,--unresolved-symbols=report-all \
 # -Wl,--warn-unresolved-symbols \

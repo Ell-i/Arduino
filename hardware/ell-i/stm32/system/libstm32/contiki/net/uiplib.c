@@ -3,17 +3,17 @@
  * Computer Science.
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *    documentation and/or other materials provided with the distribution. 
  * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior
- *    written permission.
+ *    written permission.  
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -25,7 +25,7 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
  *
  * This file is part of the uIP TCP/IP stack and the Contiki operating system.
  *
@@ -41,6 +41,7 @@
 #include "net/uip-debug.h"
 
 /*-----------------------------------------------------------------------------------*/
+#if UIP_CONF_IPV6
 int
 uiplib_ip6addrconv(const char *addrstr, uip_ip6addr_t *ipaddr)
 {
@@ -102,8 +103,9 @@ uiplib_ip6addrconv(const char *addrstr, uip_ip6addr_t *ipaddr)
 
   return 1;
 }
+#endif /* UIP_CONF_IPV6 */
 /*-----------------------------------------------------------------------------------*/
-/* Parse a IPv4-address from a string. Returns the number of characters read
+/* Parse a IPv4-address from a string. Returns the number of characters read 
  * for the address. */
 int
 uiplib_ip4addrconv(const char *addrstr, uip_ip4addr_t *ipaddr)
@@ -127,7 +129,7 @@ uiplib_ip4addrconv(const char *addrstr, uip_ip4addr_t *ipaddr)
         ipaddr->u8[i] = tmp;
         tmp = 0;
       } else if(c >= '0' && c <= '9') {
-        tmp = (tmp * 10) + (c - '0');
+      	tmp = (tmp * 10) + (c - '0');
       } else {
         return 0;
       }
@@ -138,15 +140,4 @@ uiplib_ip4addrconv(const char *addrstr, uip_ip4addr_t *ipaddr)
   }
   return charsread-1;
 }
-/*-----------------------------------------------------------------------------------*/
-int
-uiplib_ipaddrconv(const char *addrstr, uip_ipaddr_t *ipaddr)
-{
-#if UIP_CONF_IPV6
-  return uiplib_ip6addrconv(addrstr, ipaddr);
-#else /* UIP_CONF_IPV6 */
-  return uiplib_ip4addrconv(addrstr, ipaddr);
-#endif /* UIP_CONF_IPV6 */
-}
-
 /*-----------------------------------------------------------------------------------*/

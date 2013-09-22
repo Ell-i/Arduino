@@ -66,6 +66,8 @@
 #ifndef __TCPIP_H__
 #define __TCPIP_H__
 
+#include "contiki.h"
+
 struct uip_conn;
 
 struct tcpip_uipstate {
@@ -272,7 +274,7 @@ struct uip_udp_conn *udp_broadcast_new(uint16_t port, void *appstate);
 CCIF void tcpip_poll_udp(struct uip_udp_conn *conn);
 
 /** @} */
-
+ 
 /**
  * \name ICMPv6 functions
  * @{
@@ -315,7 +317,7 @@ void tcpip_icmp6_call(uint8_t type);
  *
  * This event is posted to a process whenever a uIP event has occurred.
  */
-//CCIF extern process_event_t tcpip_event;
+CCIF extern process_event_t tcpip_event;
 
 /**
  * \name TCP/IP packet processing

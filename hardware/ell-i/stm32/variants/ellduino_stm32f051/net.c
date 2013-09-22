@@ -7,29 +7,98 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include <thread_switch.h>
+
 #include <uip.h>
 #include <uip_arp.h>
 
 #include <enc28j60.h>
 
-#if 0
-#include <core/sys/pt.h>
-#include <core/sys/process.h>
-#include <core/net/tcpip.h>
-#include <core/sys/etimer.h>
-#include <apps/webserver/webserver-nogui.h>
-#include <core/sys/clock.h>
+#include <sys/autostart.h>
+#if 1
+#include <sys/pt.h>
+#include <sys/process.h>
+#include <net/tcpip.h>
+#include <sys/etimer.h>
+//#include <apps/webserver/webserver-nogui.h>
+#include <sys/clock.h>
 #endif
 
+#include <apps/erbium/erbium.h>
+
 #include "debug.h"
+#include "net.h"
+
+static uint32_t interrupt_stack[32];
 
 extern volatile uint32_t millisecondCount;
 
+static THREAD_DEFINE_EXECUTION_CONTEXT(net, 1024+256, net_thread, __thread_exit, 0, 0, 0, 0);
+static THREAD_DEFINE_CONTEXT(net);
+
+#if 0
+const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0xae, 0x68, 0x2e, 0xe2, 0xbf, 0xe0 };
+#else
+const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0, 0, 0, 0, 0, 0, };
+#endif
+
+void net_spawn() {
+#if 1
+    __thread_init(interrupt_stack,
+                  THREAD_INITIAL_EXECUTION_CONTEXT(__thread_net_context.tc_stack_bottom));
+#endif
+}
+
+extern struct process etimer_process, tcpip_process, dhcp_process, webserver_nogui_process;
+extern struct process rest_server_example;
+
+#define AUTOSTART_ENABLE
+
+void net_thread(/* XXX Add parameters, IP address etc */) {
+    net_init();
+
+    for (;;) {
+        net_loop();
+        __thread_switch();
+    }
+}
+
+static uint8_t net_output(void) {
+    printf("NET_OUTPUT: Sending %d bytes\n", uip_len);
+    uip_arp_out();
+    enc_packet_send(uip_buf, uip_len);
+    return 0;
+}
+
 void net_init() {
+
+    /* SysTick end of count event each 1ms */
+    SysTick_Config(RCC_GetHCLKFreq() / 1000); /* CMSIS */
+
+    // clock_init(); // Not implemented / needed
+
+    DEBUG_SET_LED1(1);
+    enc_init(mac_address);
+    DEBUG_SET_LED1(0);
+
     uip_init();
+    tcpip_set_outputfunc(net_output);
+
+#if 1
     uip_ipaddr_t addr;
     uip_ipaddr(&addr, 10,0,0,2);
     uip_sethostaddr(&addr);
+#endif
+
+#if 1 /* COAP */
+    // clock_init(); /// XXX Not defined nor used yet
+    process_init();
+    process_start(&etimer_process, NULL); 
+    process_start(&tcpip_process, NULL);
+#if 1
+    process_start(&rest_server_example, NULL);
+#endif
+#endif
 }
 
 void net_loop() {
@@ -60,13 +129,14 @@ void net_loop() {
         }
         if (uip_len > 0) {
             DEBUG_SET_LED5(1);
+            printf("ETH1: Sending %d bytes\n", uip_len);
             enc_packet_send(uip_buf, uip_len);
             DEBUG_SET_LED5(0);
         }
     }
     DEBUG_SET_LED3(0);
 
-#if 0
+#if TCP
     /*
      * Process upper-layer processes
      */
@@ -74,6 +144,7 @@ void net_loop() {
     while (process_run() > 0)
         ;
     DEBUG_SET_LED2(0);
+
 #endif
     if (millisecondCount > prevTime + 50 || millisecondCount < prevTime) {
         /*
@@ -86,6 +157,7 @@ void net_loop() {
             GPIOC->ODR ^= GPIO_ODR_8;
             if (uip_len > 0) {
                 uip_arp_out();
+                printf("ETH2: Sending %d bytes\n", uip_len);
                 enc_packet_send(uip_buf, uip_len);
             }
         }
