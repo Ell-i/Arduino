@@ -20,6 +20,8 @@
 
 typedef void (*interruptCB)(void);
 
+#if defined(__SAM3X8E__)
+
 static interruptCB callbacksPioA[32];
 static interruptCB callbacksPioB[32];
 static interruptCB callbacksPioC[32];
@@ -35,7 +37,6 @@ static void __initialize() {
 		callbacksPioD[i] = NULL;
 	}
 
-#if defined(__SAM3X8E__)
 	pmc_enable_periph_clk(ID_PIOA);
 	NVIC_DisableIRQ(PIOA_IRQn);
 	NVIC_ClearPendingIRQ(PIOA_IRQn);
@@ -59,8 +60,8 @@ static void __initialize() {
 	NVIC_ClearPendingIRQ(PIOD_IRQn);
 	NVIC_SetPriority(PIOD_IRQn, 0);
 	NVIC_EnableIRQ(PIOD_IRQn);
-#endif
 }
+#endif
 
 
 void attachInterrupt(uint32_t pin, void (*callback)(void), uint32_t mode)
