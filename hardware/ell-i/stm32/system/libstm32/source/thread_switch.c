@@ -137,7 +137,7 @@ PendSV_Handler() {
 
     // stm in thumb is auto-incrementing (while push is auto-decrementing),
     // therefore we store the registers in reverse order.
-    old_stack -= 9 * sizeof(uint32_t);
+    old_stack -= 9 /*XXX*/ * sizeof(uint32_t);
 
     // Push the unsaved registers to the old stack, using r0
     __asm__ volatile (
