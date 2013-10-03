@@ -601,7 +601,7 @@ const struct device_register_init_static_32bit usart_standby[] = {
         | ! USART_CR1_PCE      /* 0: No parity */
         | ! USART_CR1_PS       /* 0: Not used, parity not used */
         | ! USART_CR1_PEIE     /* 0: Not used, parity not used */
-        |   USART_CR1_TXEIE    /* 1: Enable transmit interrupts */
+        | ! USART_CR1_TXEIE    /* 0: Enable transmit interrupts */
         | ! USART_CR1_TCIE     /* 0: Disable transmission complete interrupts */
         |   USART_CR1_RXNEIE   /* 1: Enable receive interrupts */
         | ! USART_CR1_IDLEIE   /* 0: Disable idel interrupt */
@@ -776,8 +776,7 @@ const device_register_init_descriptor_t dri_tables[] = {
     DRI_DESCRIPTOR_STATIC_16BIT(TIM3,  arduino_pwm_output),
     DRI_DESCRIPTOR_STATIC_16BIT(TIM14, arduino_pwm_output),
     DRI_DESCRIPTOR_STATIC_16BIT(TIM15, arduino_pwm_output),
-
-#if 0
+#if 1
     DRI_DESCRIPTOR_STATIC_32BIT(USART1, usart_standby),
     DRI_DESCRIPTOR_STATIC_32BIT(USART2, usart_standby),
 #endif

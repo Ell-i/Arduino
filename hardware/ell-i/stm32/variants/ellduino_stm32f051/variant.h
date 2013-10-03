@@ -122,8 +122,6 @@ static const uint8_t DAC0 = 34;
  *        Arduino objects - C++ only
  *----------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
-
 /*
  * Return the STM32F0 chip unique id.
  */
@@ -134,33 +132,39 @@ inline void getStmUniqueId(unsigned char uid[3 * sizeof(uint32_t)]) {
     p[2] = *(uint32_t *)(0x1FFFF7AC + 0x08);
 }
 
-extern "C" {
-    extern RingBuffer rx_buffer;
-    extern RingBuffer rx_buffer1;
-/* XXX Don't use a constructor at the moment, to initialise these as PODs */
-    static const HardwareSerial Serial =  { 
-        USART2,
-        rx_buffer1,
-        GPIOA->AFR[1],
-        GPIOA->MODER,
-        ~(GPIO_AFRH_AFRH6     | GPIO_AFRH_AFRH7),
-          GPIO_AFRx_AFRx6_AF1 | GPIO_AFRx_AFRx7_AF1,
-        ~(GPIO_MODER_MODER14_0 | GPIO_MODER_MODER15_0),
-        (GPIO_MODER_MODER14_1  | GPIO_MODER_MODER15_1),
-        0, 0, 0, 0, /* XXX FIX THIS */
-    };
+#ifdef __cplusplus
 
-    static const HardwareSerial Serial1 = {
-        USART1, 
-        rx_buffer,
-        GPIOA->AFR[1],
-        GPIOA->MODER,
-        ~(GPIO_AFRH_AFRH1     | GPIO_AFRH_AFRH2),
-          GPIO_AFRx_AFRx1_AF1 | GPIO_AFRx_AFRx2_AF1,
-        ~(GPIO_MODER_MODER9_0 | GPIO_MODER_MODER10_0),
-        (GPIO_MODER_MODER9_1  | GPIO_MODER_MODER10_1),
-        0, 0, 0, 0, /* XXX FIX THIS */
-    };
+extern "C" {
+
+extern RingBuffer rx_buffer;
+extern RingBuffer rx_buffer1;
+
+/* XXX Don't use a constructor at the moment, to initialise these as PODs */
+static const HardwareSerial Serial =  {
+    USART2,
+    &rx_buffer,
+    GPIOA->AFR[1],
+    GPIOA->MODER,
+    ~(GPIO_AFRH_AFRH6     | GPIO_AFRH_AFRH7),
+    GPIO_AFRx_AFRx6_AF1 | GPIO_AFRx_AFRx7_AF1,
+    ~(GPIO_MODER_MODER14_0 | GPIO_MODER_MODER15_0),
+    (GPIO_MODER_MODER14_1  | GPIO_MODER_MODER15_1),
+    0, 0, 0, 0, /* XXX FIX THIS */
+};
+
+static const HardwareSerial Serial1 = {
+    USART1,
+    &rx_buffer1,
+    GPIOA->AFR[1],
+    GPIOA->MODER,
+    ~(GPIO_AFRH_AFRH1     | GPIO_AFRH_AFRH2),
+    GPIO_AFRx_AFRx1_AF1 | GPIO_AFRx_AFRx2_AF1,
+    ~(GPIO_MODER_MODER9_0 | GPIO_MODER_MODER10_0),
+    (GPIO_MODER_MODER9_1  | GPIO_MODER_MODER10_1),
+    0, 0, 0, 0, /* XXX FIX THIS */
+};
+
+
 };
 
 #endif

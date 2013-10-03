@@ -3,11 +3,10 @@
 #include "enc28j60.h"
 #include "debug.h"
 
-#ifdef __cplusplus
 extern "C" {
+
 #include "contiki.h"
 #include "sys/etimer.h"
-#endif
 
 extern void Peripheral_Init(void);
 
@@ -121,7 +120,7 @@ void serialEvent() { }
 
 void USART1_IRQHandler(void);
 void USART1_IRQHandler(void) {
-    //Serial.IrqHandler();
+    Serial1.irqHandler();
 }
 
 void serialEvent1() __attribute__((weak));
@@ -129,9 +128,7 @@ void serialEvent1() { }
 
 void USART2_IRQHandler(void);
 void USART2_IRQHandler(void) {
-    //Serial1.IrqHandler();
+    Serial.irqHandler();
 }
 
-#ifdef __cplusplus
-}
-#endif
+} // extern "C"

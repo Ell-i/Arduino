@@ -18,13 +18,15 @@ class HardwareSerial /* XXX : public Stream */
 {
 public: /* XXX: Let these be public for now, making this class POD.  Once we get into full C++11 with constexpr, revise */
     USART_TypeDef *const usart;
-    RingBuffer &buffer;
+    RingBuffer *const buffer;
     __IO uint32_t &gpio_afr;
     __IO uint32_t &gpio_moder;
     const uint32_t usart_afr_mask,     usart_afr_value;
     const uint32_t usart_moder_mask,   usart_moder_value;
     const uint32_t default_afr_mask,   default_afr_value;
     const uint32_t default_moder_mask, default_moder_value;
+
+    void irqHandler() const;
 
 public:
     /* XXX constexpr HardwareSerial(USART_TypeDef *const u, ...) : usart(u), ... {}; */
@@ -130,27 +132,27 @@ void HardwareSerial::begin(unsigned long baudRate) const {
 
 inline
 int HardwareSerial::available(void) const {
-    return !buffer.empty();
+    return !buffer->empty();
 };
 
 inline
 int HardwareSerial::peek(void) const {
-    return buffer.peek();
+    return buffer->peek();
 };
 
 inline
 int HardwareSerial::read(void) const {
-    return buffer.get();
+    return buffer->get();
 };
 
 inline
 void HardwareSerial::pushBack(int c) const {
-    buffer.push(c);
+    buffer->push(c);
 }
 
 inline
 void HardwareSerial::flush(void) const {
-    buffer.flush();
+    buffer->flush();
 };
 
 inline
@@ -158,7 +160,7 @@ size_t HardwareSerial::write(uint8_t c) const {
     usart->TDR = c;
 
     while ((usart->ISR & USART_ISR_TXE) == 0) {
-        yield();
+        //yield();
     }
 };
 
