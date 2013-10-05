@@ -24,19 +24,14 @@ _estack = 0x20002000;
 
 SECTIONS
 {
-    /* for Cortex devices, the beginning of the startup code is stored in the .isr_vector section, which goes to FLASH */
-    .isr_vector :
+    .text :
     {
+        /* for Cortex devices, the beginning of the startup code is stored in the .isr_vector section, which goes to FLASH */
 	. = ALIGN(4);
         KEEP(*(.isr_vector))            /* Startup code */
 	. = ALIGN(4);
-    } >FLASH
 
-    /* the program code is stored in the .text section, which goes to Flash */
-    .text :
-    {
-	. = ALIGN(4);
-
+        /* the program code is stored in the .text section, which goes to Flash */
         *(.text)                   /* normal code */
         *(.text.*)                 /* -ffunction-sections code */
         *(.rodata)                 /* read-only data (constants) */

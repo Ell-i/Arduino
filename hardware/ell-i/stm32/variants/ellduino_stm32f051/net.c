@@ -36,11 +36,9 @@ extern volatile uint32_t millisecondCount;
 static THREAD_DEFINE_EXECUTION_CONTEXT(net, 1024+256, net_thread, __thread_exit, 0, 0, 0, 0);
 static THREAD_DEFINE_CONTEXT(net);
 
-#if 0
-const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0xae, 0x68, 0x2e, 0xe2, 0xbf, 0xe0 };
-#else
-const uint8_t mac_address[ETH_ADDRESS_LEN] = { 0, 0, 0, 0, 0, 0, };
-#endif
+struct uip_eth_addr mac_address = {
+    .addr = { 0x00, 0x04, 0xa3, 0, 0, 0 },
+};
 
 void net_spawn() {
 #if 1
@@ -77,8 +75,15 @@ void net_init() {
 
     // clock_init(); // Not implemented / needed
 
+    uint8_t cpuid[3 * sizeof(uint32_t)/* XXX */];
+
+    getStmUniqueId((uint32_t *)cpuid);
+    mac_address.addr[3] = cpuid[0]; /* XXX */
+    mac_address.addr[4] = cpuid[2]; /* XXX */
+    mac_address.addr[5] = cpuid[4]; /* XXX */
+
     DEBUG_SET_LED1(1);
-    enc_init(mac_address);
+    enc_init(mac_address.addr);
     DEBUG_SET_LED1(0);
 
     uip_init();
@@ -88,6 +93,7 @@ void net_init() {
     uip_ipaddr_t addr;
     uip_ipaddr(&addr, 10,0,0,2);
     uip_sethostaddr(&addr);
+    uip_setethaddr(mac_address);
 #endif
 
 #if 1 /* COAP */

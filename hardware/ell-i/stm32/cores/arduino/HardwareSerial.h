@@ -131,6 +131,11 @@ void HardwareSerial::begin(unsigned long baudRate) const {
 }
 
 inline
+void HardwareSerial::setTimeout(unsigned long timeout) const {
+    buffer->_setTimeout(timeout);
+}
+
+inline
 int HardwareSerial::available(void) const {
     return !buffer->empty();
 };

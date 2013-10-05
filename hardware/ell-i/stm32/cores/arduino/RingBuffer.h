@@ -12,9 +12,10 @@
 
 class RingBuffer {
 private:
-    uint8_t buffer[RINGBUFFER_SIZE];
     uint8_t head;
     uint8_t tail;
+    unsigned long timeout; /* For hardwareSerial */
+    uint8_t buffer[RINGBUFFER_SIZE];
 
     int nextIndex(int index) const {
         return (index + 1) % RINGBUFFER_SIZE;
@@ -25,7 +26,15 @@ private:
     }
 
 public:
-    /* XXX constexpr */ RingBuffer() : head(0), tail(0) {}
+    /* XXX constexpr */ RingBuffer() : head(0), tail(0), timeout(1000) {}
+
+    void _setTimeout(unsigned long to) {
+        timeout = to;
+    }
+
+    unsigned long _getTimeout() {
+        return timeout;
+    }
 
     void flush(void) {
         head = tail = 0;

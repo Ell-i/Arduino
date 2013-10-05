@@ -107,6 +107,7 @@ const struct device_register_init_masked_32bit nvic[] = {
     ENABLE_INTERRUPT(SPI2_IRQn, 3), /* Lowest priority */
     ENABLE_INTERRUPT(USART1_IRQn, 3),
     ENABLE_INTERRUPT(USART2_IRQn, 3),
+    ENABLE_INTERRUPT(TIM1_BRK_UP_TRG_COM_IRQn, 3),
 };
 
 /*
@@ -753,8 +754,59 @@ const struct device_register_init_static_32bit adc_init2[] = {
     D32(ADC, CCR,
         0
         | ! ADC_CCR_VBATEN     /* 0: VBAT channel disabled */
-        | ! ADC_CCR_TSEN       /* 0: Temperature sensor disabled */
-        | ! ADC_CCR_VREFEN     /* 0: VREFINT channel disable */
+        |   ADC_CCR_TSEN       /* 0: Temperature sensor enabled */
+        |   ADC_CCR_VREFEN     /* 0: VREFINT channel enabled */
+        ),
+};
+
+/**********
+ *  COMP  *
+ **********/
+const struct device_register_init_static_32bit comparator[] = {
+    D32(COMP, CSR,
+        0
+        /* Comparator 2 */
+        |   COMP_CSR_COMP2LOCK     /* 1 : COMP_CSR[15:0] bits are locked */
+        | ! COMP_CSR_COMP2OUT      /* x: Read-only status bit */
+        |   COMP_CSR_COMP2HYST_0   /* 01: Low hysteresis */
+        |   COMP_CSR_COMP2POL      /* 1: output is inverted */
+        |   COMP_CSR_COMP2OUTSEL_0 /* 001: Timer 1 break input */
+        | ! COMP_CSR_WNDWEN        /* 0: Window mode disabled */
+        | ! COMP_CSR_COMP2INSEL    /* 000: 1/4 of Vrefint */
+        | ! COMP_CSR_COMP2MODE     /* 00: High speed / full power */
+        |   COMP_CSR_COMP2EN       /* 1: Enable comparator */
+        /* Comparator 1 */
+        |   COMP_CSR_COMP1LOCK     /* 1 : COMP_CSR[15:0] bits are locked */
+        | ! COMP_CSR_COMP1OUT      /* x: Read-only status bit */
+        |   COMP_CSR_COMP1HYST_0   /* 01: Low hysteresis */
+        |   COMP_CSR_COMP1POL      /* 1: output is inverted */
+        |   COMP_CSR_COMP1OUTSEL_0 /* 001: Timer 1 break input */
+        | ! COMP_CSR_COMP1INSEL    /* 000: 1/4 of Vrefint */
+        | ! COMP_CSR_COMP1MODE     /* 00: High speed / full power */
+        | ! COMP_CSR_COMP1SW1      /* 0: Switch SW1 open */
+        |   COMP_CSR_COMP1EN       /* 1: Enable comparator */
+        ),
+};
+
+const struct device_register_init_static_32bit timer_comparator_break[] = {
+#ifdef ENABLE_EXPLICIT_DEFAULT_VALUES
+    D16(TIM1, CR2, 0),      /* Default value */
+#endif
+    D16(TIM1, DIER, 
+        0
+        |   TIM_DIER_BIE        /* 1   = Break interrupt enable */
+        ),
+    D16(TIM1, BDTR,
+        0
+        |   TIM_BDTR_MOE        /* 1   = Main output enable */
+        | ! TIM_BDTR_AOE        /* 0   = MOE can be set only by software */
+        |   TIM_BDTR_BKP        /* 1   = Break input BRK is active high */
+        |   TIM_BDTR_BKE        /* 1   = Break inputs enabled */
+        |   TIM_BDTR_OSSR       /* 1   = OC/OCN outputs are enabled */
+        | ! TIM_BDTR_OSSI       /* 0   = When inactive, OC/OCN outputs are disabled 
+                                 *       (OC/OCN enable output signal=0) */
+        |   TIM_BDTR_LOCK_0     /* 01  = LOCK Level 1 */
+        | ! TIM_BDTR_DTG        /* 0   = No dead time */
         ),
 };
 
@@ -783,6 +835,10 @@ const device_register_init_descriptor_t dri_tables[] = {
     DRI_DESCRIPTOR_WAITED_32BIT(ADC1,  adc_wait_for_calibrate),
     DRI_DESCRIPTOR_STATIC_32BIT(ADC1,  adc_init),
     DRI_DESCRIPTOR_STATIC_32BIT(ADC,   adc_init2),
+#if 1 
+    DRI_DESCRIPTOR_STATIC_32BIT(COMP,  comparator),
+    DRI_DESCRIPTOR_STATIC_32BIT(TIM1,  timer_comparator_break),
+#endif
 };
 
 /*

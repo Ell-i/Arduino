@@ -88,7 +88,11 @@ CORE_CXX_SRCS  := $(notdir $(wildcard $(CORE_PATH)/*.cpp))
 #
 # Object files
 #
-VARIANT_OBJS := startup_stm32f0xx.o stm32f051_init.o variant.o net.o
+VARIANT_OBJS := startup_stm32f0xx.o \
+	        stm32f051_init.o \
+	        variant.o \
+	        net.o \
+	        HardwareSerial_irqHandler.o
 CORE_OBJS    := $(patsubst %.c,   %.o, $(CORE_C_SRCS))   \
                 $(patsubst %.cpp, %.o, $(CORE_CXX_SRCS))
 SYSTEM_OBJS  := system_stm32f0xx.o \
@@ -125,10 +129,13 @@ $(OBJDIR)/%.o : %.cpp
 $(OBJDIR)/%.o : %.s
 	$(COMPILE.s) $< -o $@
 
-.SUFFIXES: .bin .hex .lst
+.SUFFIXES: .bin .hex .lst .map
 
 %.bin: %
 	$(OBJCOPY) -O binary $< $@
+
+%.hex: %
+	$(OBJCOPY) -O ihex $< $@
 
 %.lst: %
 	$(OBJDUMP) -S $< > $@
@@ -156,6 +163,7 @@ LDFLAGS  := \
 	-Tvariants/ellduino_stm32f051/linker_scripts/gcc/flash.ld \
 	-lm -lgcc -mthumb \
 	-Wl,--check-sections -Wl,--gc-sections \
+	-Wl,-Map=test.map \
 	-Wl,--entry=Reset_Handler \
 	-Wl,--warn-common -Wl,--warn-section-align \
 	-Wl,--start-group ${OBJS}  -Wl,--end-group \
