@@ -109,14 +109,15 @@ COAP_OBJS    := process.o etimer.o erbium.o list.o memb.o timer.o stimer.o \
 		er-coap-13.o er-coap-13-engine.o er-coap-13-observing.o  \
 		er-coap-13-separate.o er-coap-13-transactions.o \
 		er-example-server.o autostart.o
-# DHCP_OBJS    := dhcpc.o dhcp.o resolv.o
+ DHCP_OBJS    := dhcpc.o 
 # WEBSERV_OBJS := psock.o memb.o httpd.o http-strings.o httpd-cgi.o httpd-fs.o \
 #                 webserver-nogui.o
 
 OBJS         := $(addprefix $(OBJDIR)/, $(VARIANT_OBJS) $(CORE_OBJS) $(SYSTEM_OBJS))
 OBJS	     += $(addprefix $(OBJDIR)/, $(ETH_OBJS) $(NET_OBJS))
 # OBJS         += $(addprefix $(OBJDIR)/, $(TCP_OBJS))
-# OBJS         += $(addprefix $(OBJDIR)/, $(DHCP_OBJS) $(WEBSERV_OBJS))
+OBJS         += $(addprefix $(OBJDIR)/, $(DHCP_OBJS))
+# OBJS         += $(addprefix $(OBJDIR)/, $(WEBSERV_OBJS))
 OBJS         += $(addprefix $(OBJDIR)/, $(COAP_OBJS))
 
 
