@@ -138,9 +138,9 @@ void net_init() {
 
     uip_setethaddr(mac_address);
 
-#if 0
+#if 1
     uip_ipaddr_t addr;
-    uip_ipaddr(&addr, 10,0,0,2);
+    uip_ipaddr(&addr, 192,168,2,100);
     uip_sethostaddr(&addr);
 #endif
 
@@ -150,10 +150,14 @@ void net_init() {
     process_init();
     process_start(&etimer_process, NULL); 
     process_start(&tcpip_process, NULL);
+#if 0
     process_start(&dhcp_process, NULL);
+#endif
     process_start(&rest_server_example, NULL);
 
+#if 0
     process_post(&dhcp_process, PROCESS_EVENT_INIT, NULL);
+#endif
 }
 
 void net_loop() {
