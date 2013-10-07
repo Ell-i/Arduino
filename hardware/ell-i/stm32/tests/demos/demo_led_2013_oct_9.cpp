@@ -47,7 +47,7 @@ void setup() {
     Serial.println("LED demo started.");
 }
 
-#define PWM_LIMIT 32
+#define PWM_LIMIT 64
 
 extern "C" {
     extern volatile uint32_t pwm[COLOURS];

@@ -146,7 +146,7 @@ leds_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_
         success = 0;
     } else {
 
-        pwm[led] = (32*value)/256; /* XXX */
+        pwm[led] = (64*value)/256; /* XXX */
     }
   }
 
