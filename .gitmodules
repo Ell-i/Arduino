@@ -1,0 +1,3 @@
+[submodule "hardware/ell-i"]
+    path = hardware/ell-i
+    url = git://github.com/Ell-i/Runtime.git
