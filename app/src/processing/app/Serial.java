@@ -159,8 +159,8 @@ public class Serial implements SerialPortEventListener {
           if (portId.getName().equals(iname)) {
             //System.out.println("looking for "+iname);
             port = (SerialPort)portId.open("serial madness", 2000);
-            port.setDTR(true);
-            port.setRTS(true);
+            port.setDTR(false);
+            port.setRTS(false);
             input = port.getInputStream();
             output = port.getOutputStream();
             port.setSerialPortParams(rate, databits, stopbits, parity);
