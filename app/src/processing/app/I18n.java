@@ -34,7 +34,15 @@ public class I18n {
       if (language != null && language.trim().length() > 0) {
         Locale.setDefault(new Locale(language));
       }
-      i18n = ResourceBundle.getBundle("processing.app.i18n.Resources", Locale.getDefault());
+
+      try {
+        i18n = ResourceBundle.getBundle("processing.app.i18n.Resources", Locale.getDefault());
+      } catch (java.util.MissingResourceException e) {
+        language = "en";
+        Locale.setDefault(new Locale(language));
+        i18n = ResourceBundle.getBundle("processing.app.i18n.Resources", Locale.getDefault());
+      }
+
 
       PROMPT_YES = _("Yes");
       PROMPT_NO = _("No");
